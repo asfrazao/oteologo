@@ -33,8 +33,11 @@ console.log('[SERVER] Iniciando aplicação...');
 
 // 🔗 Conexão com MongoDB
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('✅ MongoDB conectado'))
-    .catch((err) => { console.error('[MONGO] Erro:', err); process.exit(1); });
+    .then(() => console.log('✅ MongoDB conectado com sucesso'))
+    .catch((err) => {
+      console.error('❌ Erro ao conectar ao MongoDB:', err.message);
+      process.exit(1);
+    });
 
 // 🔧 Middlewares
 app.use(express.json());
