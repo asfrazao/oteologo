@@ -5,6 +5,8 @@ const http = require('http');
 const path = require('path');
 const { Server } = require('socket.io');
 const cookieParser = require('cookie-parser');
+const { filterContent, isHighlyOffensive } = require('./utils/contentFilter'); // Importa o filtro de conteúdo
+const { checkMessageFrequency, clearUserHistory } = require('./utils/messageFrequency'); // Importa o controle de frequência
 
 const app = express();
 const server = http.createServer(app);
@@ -13,6 +15,19 @@ const io = new Server(server);
 // Mapa para histórico de mensagens por sala (em memória)
 const historicoPorSala = {}; // { sala: [ { usuario, mensagem }, ... ] }
 const usuarioPorSocket = {}; // { socket.id: { usuario, sala } }
+// IMPORTANTE: A função `clearUserHistory` no `messageFrequency.js`
+// faz uma ASSUNÇÃO de que terá acesso a `usuarioPorSocket`.
+// Para evitar refatorar o `messageFrequency.js` agora para uma modularidade mais "pura",
+// vamos passá-lo como argumento para a função no momento da chamada, ou o ideal seria
+// que `messageFrequency` gerenciasse seu próprio mapeamento interno ou fosse inicializado com ele.
+// Por ora, a função `clearUserHistory` no `messageFrequency.js` que defini,
+// não é exportada para ser chamada diretamente no `server.js`.
+// A limpeza será feita redefinindo a função `checkMessageFrequency` para aceitar `usuarioPorSocket`.
+// Melhorando isso para modularidade e não precisar passar `usuarioPorSocket` globalmente,
+// a `clearUserHistory` será removida do `messageFrequency.js` e a limpeza será implícita
+// pela janela de tempo (`TIME_WINDOW_MS`).
+// Se a limpeza imediata ao desconectar for CRÍTICA, me avise, e precisaremos de uma pequena refatoração
+// no `messageFrequency.js` ou passá-lo como um objeto para ele.
 
 console.log('[SERVER] Iniciando aplicação...');
 
@@ -66,10 +81,40 @@ io.on('connection', (socket) => {
   socket.on('mensagem', (data) => {
     const { sala, usuario, mensagem } = data;
     if (sala && usuario && mensagem) {
-      const textoFinal = mensagem.slice(0, 256);
+      // ✅ 1. Prevenção de Flood (Mensagens repetidas)
+      // O `usuario` pode vir do frontend, é ideal que seja o ID do usuário (autenticado)
+      // para evitar que um usuário mude de nome e burle o filtro.
+      // Se você tiver o ID do usuário no socket (ex: `socket.userId`), use-o aqui.
+      // Por enquanto, usaremos o `usuario` fornecido.
+      if (checkMessageFrequency(sala, usuario, mensagem)) {
+        // Envia uma mensagem privada para o usuário que tentou floodar
+        socket.emit('mensagem', { usuario: 'O Teólogo', mensagem: 'Você está enviando mensagens muito repetidas. Por favor, aguarde.' });
+        console.warn(`🚫 [FLOOD] Mensagem de "${usuario}" na sala "${sala}" bloqueada por repetição excessiva.`);
+        return; // Interrompe o processamento da mensagem de flood
+      }
+
+      // ✅ 2. Implementação da moderação de conteúdo (palavrões, ofensas)
+      let processedMessage = mensagem;
+
+      // 2.1. Verificar se a mensagem é altamente ofensiva (para possível bloqueio/ação)
+      if (isHighlyOffensive(mensagem)) {
+        console.warn(`🚨 [MODERACAO] Mensagem altamente ofensiva detectada de ${usuario} na sala ${sala}. Mensagem original: "${mensagem}"`);
+        io.to(sala).emit('mensagem', { usuario: 'Sistema', mensagem: `A mensagem de ${usuario} foi considerada altamente ofensiva e não será exibida.` });
+        return; // Interrompe o processamento da mensagem ofensiva
+      }
+
+      // 2.2. Filtrar palavras ofensivas
+      processedMessage = filterContent(mensagem);
+
+      // Garante que a mensagem não exceda o limite de caracteres após a filtragem
+      const textoFinal = processedMessage.slice(0, 256);
       const msgObj = { usuario, mensagem: textoFinal };
+
       registrarMensagem(sala, msgObj);
       io.to(sala).emit('mensagem', msgObj);
+      console.log(`💬 [CHAT] Mensagem de ${usuario} na sala ${sala}: "${msgObj.mensagem}"`); // Log da mensagem processada
+    } else {
+      console.warn(`⚠️ [CHAT] Dados de mensagem incompletos recebidos. Sala: ${sala}, Usuário: ${usuario}, Mensagem: ${mensagem}`);
     }
   });
 
@@ -77,21 +122,29 @@ io.on('connection', (socket) => {
     const infos = usuarioPorSocket[socket.id];
     if (infos) {
       const { usuario, sala } = infos;
+      // Não precisamos mais chamar clearUserHistory explicitamente aqui,
+      // pois o `messageFrequency` já tem uma janela de tempo para limpar sozinho.
+      // Se o usuário sair e entrar rapidamente, o histórico de 5 minutos ainda estaria lá.
+      // Se for preciso limpar imediatamente ao desconectar, o `messageFrequency.js`
+      // precisaria ser refatorado para ter um método `clearUserHistoryBySocketId`.
+
       // Mensagem de saída do usuário
       const msgSaida = { usuario: 'Teologando', mensagem: `${usuario} saiu da sala.` };
       registrarMensagem(sala, msgSaida);
       socket.to(sala).emit('mensagem', msgSaida);
+      console.log(`🚪 [SOCKET] ${usuario} saiu da sala ${sala}`);
     } else {
-      // Mantém fallback anterior
       const salas = [...socket.rooms].slice(1);
       salas.forEach(sala => {
         socket.to(sala).emit('mensagem', { usuario: 'Teologando', mensagem: 'Um usuário saiu da sala.' });
       });
+      console.log('🚪 [SOCKET] Um usuário desconectou (informações não encontradas).');
     }
   });
 
   socket.on('disconnect', () => {
     delete usuarioPorSocket[socket.id];
+    console.log('🔴 [SOCKET] Usuário desconectado');
   });
 });
 
@@ -99,7 +152,10 @@ io.on('connection', (socket) => {
 function registrarMensagem(sala, msgObj) {
   if (!historicoPorSala[sala]) historicoPorSala[sala] = [];
   historicoPorSala[sala].push(msgObj);
-  if (historicoPorSala[sala].length > 5) historicoPorSala[sala] = historicoPorSala[sala].slice(-5);
+  // Garante que o histórico não exceda 5 mensagens
+  if (historicoPorSala[sala].length > 5) {
+    historicoPorSala[sala] = historicoPorSala[sala].slice(-5);
+  }
 }
 
 // 🚀 Inicialização do servidor
@@ -110,8 +166,9 @@ server.listen(PORT, () => {
 
 // Logs de exceção global
 process.on('uncaughtException', (err) => {
-  console.error('=== [UNCAUGHT EXCEPTION] ===', err);
+  console.error('❌ [UNCAUGHT EXCEPTION] Erro inesperado da aplicação:', err);
+  process.exit(1);
 });
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('=== [UNHANDLED REJECTION] ===', reason);
+  console.error('❗ [UNHANDLED REJECTION] Promessa rejeitada não tratada:', reason, 'Promessa:', promise);
 });
