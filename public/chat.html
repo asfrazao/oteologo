@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Chat - Teologando</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
+    <style>
+        main { max-width: 800px; margin: 2rem auto; padding: 1.5rem; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);}
+        #sala-titulo { color: #003366; text-align: center; margin-bottom: 1.5rem;}
+        #chat-box { background: #f9f9f9; border-radius: 8px; padding: 1rem; height: 300px; overflow-y: auto; margin-bottom: 1rem; border: 1px solid #ccc; text-align: left;}
+        #form-msg { display: flex; gap: 0.5rem; align-items: center;}
+        #msg { flex: 1; padding: 0.75rem; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem;}
+        .emoji-btn { background: none; border: none; font-size: 1.7rem; cursor: pointer; line-height: 1;}
+        button.btn { background-color: #007BFF; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-size: 1rem; cursor: pointer;}
+        button.btn:hover { background-color: #0056b3;}
+        #btn-sair { background: #e44d26; margin-left: 0.5rem; }
+        #btn-sair:hover { background: #b63617; }
+        emoji-picker { position: absolute; z-index: 10; margin-top: 2.5rem; right: 2rem; max-width: 340px; display: none; background: white; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.12);}
+        #modal-bg { display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(30,20,50,0.17); z-index:1000;}
+        #modal-sair { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; border-radius:13px; box-shadow:0 4px 28px rgba(0,0,0,0.15); z-index:1001; min-width:340px; max-width:95vw;}
+        #modal-sair-msg { padding:2rem 1.5rem 1rem 1.5rem; font-size:1.13rem; text-align:center;}
+        #modal-sair-btns { display:flex; justify-content:center; gap:1.2rem; padding:0 1rem 1.4rem 1rem;}
+        #modal-sair-confirm { background:#e44d26; color:#fff; font-weight:bold; border:none; border-radius:7px; padding:0.8rem 1.4rem; cursor:pointer;}
+        #modal-sair-cancel { background:#ccc; color:#222; font-weight:bold; border:none; border-radius:7px; padding:0.8rem 1.4rem; cursor:pointer;}
+        #modal-sair-confirm:hover { background:#b63617;}
+        #modal-sair-cancel:hover { background:#888;}
+    </style>
+</head>
+<body>
+
+<div class="top-bar"><a href="/apoie.html" style="color:white;">APOIE O PROJETO E GANHE UM PRESENTE!</a></div>
+<div class="header-logo"><div class="logo">O Teólogo</div></div>
+<nav class="menu">
+    <a href="/">Início</a>
+    <a href="/salas">Salas Disponíveis</a>
+    <a href="/criar">Criar Nova Sala</a>
+    <a href="/auth">Login/Logout</a>
+    <a href="/apoie.html">App Mobile</a>
+    <span id="userStatus">Logado como: <span id="apelido"></span></span>
+</nav>
+
+<main>
+    <h2 id="sala-titulo">Sala: </h2>
+    <div id="chat-box"></div>
+    <form id="form-msg" autocomplete="off" style="position:relative;">
+        <input type="text" id="msg" maxlength="256" placeholder="Digite sua mensagem..." required autocomplete="off" />
+        <button type="button" class="emoji-btn" id="emoji-toggle" tabindex="-1">😊</button>
+        <button class="btn" type="submit">Enviar</button>
+        <button type="button" class="btn" id="btn-sair" title="Sair desta sala">Sair</button>
+        <emoji-picker id="emoji-picker"></emoji-picker>
+    </form>
+</main>
+<footer>
+    © 2025 O Teólogo. Todos os direitos reservados.
+</footer>
+
+<div id="modal-bg"></div>
+<div id="modal-sair">
+    <div id="modal-sair-msg">Você deseja sair da sala?</div>
+    <div id="modal-sair-btns">
+        <button id="modal-sair-confirm">Confirmar</button>
+        <button id="modal-sair-cancel">Cancelar</button>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="chat.js"></script>
+<script>
+    // Emoji picker
+    const emojiToggle = document.getElementById('emoji-toggle');
+    const emojiPicker = document.getElementById('emoji-picker');
+    const msgInput = document.getElementById("msg");
+    emojiToggle.addEventListener('click', () => {
+        emojiPicker.style.display = emojiPicker.style.display === "none" || !emojiPicker.style.display ? "block" : "none";
+    });
+    emojiPicker.addEventListener('emoji-click', (event) => {
+        msgInput.value += event.detail.unicode;
+        emojiPicker.style.display = "none";
+        msgInput.focus();
+    });
+    document.addEventListener('click', (e) => {
+        if (!emojiPicker.contains(e.target) && e.target !== emojiToggle) {
+            emojiPicker.style.display = "none";
+        }
+    });
+
+    // Botão sair e modal custom (código igual ao já usado)
+    const btnSair = document.getElementById('btn-sair');
+    const modalBg = document.getElementById('modal-bg');
+    const modalSair = document.getElementById('modal-sair');
+    const btnModalConfirm = document.getElementById('modal-sair-confirm');
+    const btnModalCancel = document.getElementById('modal-sair-cancel');
+
+    btnSair.addEventListener('click', () => {
+        modalBg.style.display = 'block';
+        modalSair.style.display = 'block';
+    });
+
+    btnModalCancel.addEventListener('click', fecharModal);
+    modalBg.addEventListener('click', fecharModal);
+
+    async function sairDaSala() {
+        // Verifica se sala é do tipo usuário ou fixa consultando localStorage
+        const apelido = localStorage.getItem('apelido');
+        // Descobre se é sala de usuário pelo endpoint
+        let isSalaUsuario = false;
+        try {
+            const res = await fetch('/api/salas/usuario');
+            const salas = await res.json();
+            if (Array.isArray(salas) && salas.some(s => s.nome === sala)) {
+                isSalaUsuario = true;
+            }
+        } catch {}
+        // Chama endpoint correto para sair da sala
+        try {
+            if (isSalaUsuario) {
+                await fetch(`/api/salas/usuario/${encodeURIComponent(sala)}/sair`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+            } else {
+                await fetch('/api/salas/sair', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+            }
+        } catch (e) {}
+        localStorage.removeItem('sala');
+        window.location.href = "/";
+    }
+
+    btnModalConfirm.addEventListener('click', () => {
+        fecharModal();
+        sairDaSala();
+    });
+
+    function fecharModal() {
+        modalBg.style.display = 'none';
+        modalSair.style.display = 'none';
+    }
+</script>
+</body>
+</html>

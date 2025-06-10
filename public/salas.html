@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Salas - Teologando</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    main { max-width: 960px; margin: 2rem auto; padding: 1rem; background-color: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);}
+    .dropdown-block { background: #fff; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); max-width: 480px; margin: 2rem auto; text-align: center;}
+    .dropdown-block label { display: block; margin-bottom: 0.5rem; font-weight: bold; font-size: 1.1rem; color: #003366;}
+    select { width: 100%; padding: 0.7rem; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 1rem; font-size: 1rem;}
+    button.btn { background-color: #007BFF; color: white; border: none; padding: 0.7rem 1.5rem; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: background 0.2s;}
+    button.btn:hover { background-color: #0056b3;}
+    #custom-modal-bg { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(40,30,55,0.25); z-index: 9998;}
+    #custom-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: #fff; border-radius: 14px; box-shadow: 0 4px 28px rgba(0,0,0,0.15); z-index: 9999; min-width: 350px; max-width: 90vw;}
+    #custom-modal-msg { padding: 2rem 1.5rem 1rem 1.5rem; font-size: 1.11rem; text-align: center;}
+    #custom-modal .modal-btn-row { display: flex; justify-content: center; gap: 1rem; padding: 0 1rem 1.3rem 1rem;}
+    #custom-modal .modal-btn-row button { flex: 1; padding: 0.75rem 0; font-weight: bold; font-size: 1rem; border-radius: 7px; border: none; cursor: pointer; transition: background 0.18s;}
+    #custom-modal-ok { background: #007bff; color: #fff;}
+    #custom-modal-voltar { background: #b0b0b0; color: #333;}
+    #custom-modal-cancel { background: #e57373; color: #fff;}
+    #custom-modal-ok:hover { background: #0056b3;}
+    #custom-modal-voltar:hover { background: #868686;}
+    #custom-modal-cancel:hover { background: #be4444;}
+  </style>
+</head>
+<body>
+
+<div class="top-bar"><a href="/apoie.html" style="color:white;">APOIE O PROJETO E GANHE UM PRESENTE!</a></div>
+<div class="header-logo"><div class="logo">O Teólogo</div></div>
+<nav class="menu">
+  <a href="/">Início</a>
+  <a href="/salas">Salas Disponíveis</a>
+  <a href="/criar">Criar Nova Sala</a>
+  <a href="/auth">Login/Logout</a>
+  <a href="#">App Mobile</a>
+  <span id="userStatus">Logado como: <span id="apelido"></span></span>
+</nav>
+
+<main>
+  <h2>Salas Disponíveis</h2>
+  <div class="dropdown-block">
+    <label for="selectSalasFixas">Salas Disponíveis:</label>
+    <select id="selectSalasFixas"></select>
+    <button class="btn" onclick="entrarSalaSelecionada('fixa')">Entrar</button>
+  </div>
+  <div class="dropdown-block">
+    <label for="selectSalasUsuario">Salas Criadas por Usuários:</label>
+    <select id="selectSalasUsuario"></select>
+    <button class="btn" onclick="entrarSalaSelecionada('usuario')">Entrar</button>
+  </div>
+</main>
+<footer>
+  © 2025 O Teólogo. Todos os direitos reservados.
+</footer>
+<div id="custom-modal-bg"></div>
+<div id="custom-modal">
+  <div id="custom-modal-msg"></div>
+  <div class="modal-btn-row">
+    <button id="custom-modal-ok">OK</button>
+    <button id="custom-modal-voltar">Voltar</button>
+    <button id="custom-modal-cancel">Cancelar</button>
+  </div>
+</div>
+
+<script>
+  // Função fetch universal para APIs autenticadas, com suporte a refresh token
+  async function fetchComRefresh(url, options = {}, tentarRefresh = true) {
+    let token = localStorage.getItem('token');
+    options.headers = options.headers || {};
+    if (token) options.headers['Authorization'] = `Bearer ${token}`;
+    let res = await fetch(url, { ...options, credentials: 'include' });
+    if (res.status === 401 && tentarRefresh) {
+      const refreshRes = await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' });
+      const refreshData = await refreshRes.json();
+      if (refreshRes.ok && refreshData.accessToken) {
+        localStorage.setItem('token', refreshData.accessToken);
+        options.headers['Authorization'] = `Bearer ${refreshData.accessToken}`;
+        return await fetch(url, { ...options, credentials: 'include' });
+      } else {
+        localStorage.clear();
+        window.location.href = '/auth';
+        return res;
+      }
+    }
+    return res;
+  }
+
+  const salasFixas = ['Escatologia', 'Trindade', 'Livre Arbítrio', 'Soteriologia'];
+  const apelido = localStorage.getItem('apelido');
+  let salaAtual = localStorage.getItem('sala');
+  const token = localStorage.getItem('token');
+  if (apelido) document.getElementById('apelido').textContent = apelido;
+
+  async function atualizarSalasFixas() {
+    const select = document.getElementById('selectSalasFixas');
+    select.innerHTML = '';
+    for (const nome of salasFixas) {
+      let total = '...';
+      try {
+        const res = await fetch(`/api/salas/${encodeURIComponent(nome)}/participantes`);
+        const data = await res.json();
+        total = data.total ?? '...';
+      } catch {}
+      const option = document.createElement('option');
+      option.value = nome;
+      option.textContent = `${nome} (${total} participante${total == 1 ? '' : 's'})`;
+      select.appendChild(option);
+    }
+  }
+
+  async function atualizarSalasUsuario() {
+    const select = document.getElementById('selectSalasUsuario');
+    select.innerHTML = '';
+    try {
+      const res = await fetch('/api/salas/usuario');
+      const salasUsuario = await res.json();
+      if (salasUsuario.length === 0) {
+        const option = document.createElement('option');
+        option.disabled = true; option.selected = true;
+        option.textContent = "Nenhuma sala criada por usuários ainda.";
+        select.appendChild(option);
+      } else {
+        for (const sala of salasUsuario) {
+          const option = document.createElement('option');
+          option.value = sala.nome;
+          option.textContent = `${sala.nome}, (${sala.total} participante${sala.total === 1 ? '' : 's'})`;
+          select.appendChild(option);
+        }
+      }
+    } catch (err) {
+      const option = document.createElement('option');
+      option.disabled = true; option.selected = true;
+      option.textContent = "Erro ao buscar salas de usuários.";
+      select.appendChild(option);
+    }
+  }
+
+  function abrirModal(msg, onOk, onVoltar, onCancel) {
+    document.getElementById('custom-modal-msg').innerHTML = msg;
+    document.getElementById('custom-modal').style.display = 'block';
+    document.getElementById('custom-modal-bg').style.display = 'block';
+
+    function close() {
+      document.getElementById('custom-modal').style.display = 'none';
+      document.getElementById('custom-modal-bg').style.display = 'none';
+      document.getElementById('custom-modal-ok').onclick = null;
+      document.getElementById('custom-modal-voltar').onclick = null;
+      document.getElementById('custom-modal-cancel').onclick = null;
+    }
+
+    document.getElementById('custom-modal-ok').onclick = function() {
+      close();
+      if (onOk) onOk();
+    };
+    document.getElementById('custom-modal-voltar').onclick = function() {
+      close();
+      if (onVoltar) onVoltar();
+    };
+    document.getElementById('custom-modal-cancel').onclick = function() {
+      close();
+      if (onCancel) onCancel();
+    };
+  }
+
+  async function sairDaSalaAnterior() {
+    // Descobre se sala anterior é de usuário ou fixa
+    if (!salaAtual) return;
+    // Checa se salaAtual está nas salas fixas
+    if (salasFixas.includes(salaAtual)) {
+      await fetchComRefresh('/api/salas/sair', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+    } else {
+      // Sala criada por usuário
+      await fetchComRefresh(`/api/salas/usuario/${encodeURIComponent(salaAtual)}/sair`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+    }
+    localStorage.removeItem('sala');
+    salaAtual = null;
+  }
+
+  async function entrarSalaSelecionada(tipo) {
+    const select = tipo === 'fixa' ? document.getElementById('selectSalasFixas') : document.getElementById('selectSalasUsuario');
+    const nomeSala = select.value;
+    if (!nomeSala) return;
+    if (!token || !apelido) {
+      alert("Você precisa estar logado para entrar em uma sala.");
+      return;
+    }
+    if (salaAtual && salaAtual !== nomeSala) {
+      abrirModal(
+              `Você já está conectado na sala "<b>${salaAtual}</b>". Deseja sair dela para entrar em "<b>${nomeSala}</b>"?`,
+              async function() {
+                try {
+                  await sairDaSalaAnterior();
+                } catch {}
+                try {
+                  let apiUrl = tipo === 'usuario'
+                          ? `/api/salas/usuario/${encodeURIComponent(nomeSala)}/entrar`
+                          : `/api/salas/${encodeURIComponent(nomeSala)}/entrar`;
+                  const res = await fetchComRefresh(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+                  const result = await res.json();
+                  if (!res.ok) { alert(result.msg || "Erro ao entrar na sala."); return; }
+                  localStorage.setItem('sala', nomeSala);
+                  salaAtual = nomeSala;
+                  window.location.href = `/chat?sala=${encodeURIComponent(nomeSala)}&usuario=${encodeURIComponent(apelido)}`;
+                } catch (err) { alert("Erro ao processar a entrada na sala."); }
+              },
+              function() { window.location.href = `/chat?sala=${encodeURIComponent(salaAtual)}&usuario=${encodeURIComponent(apelido)}`; },
+              function() {}
+      );
+      return;
+    }
+    try {
+      let apiUrl = tipo === 'usuario'
+              ? `/api/salas/usuario/${encodeURIComponent(nomeSala)}/entrar`
+              : `/api/salas/${encodeURIComponent(nomeSala)}/entrar`;
+      const res = await fetchComRefresh(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+      const result = await res.json();
+      if (!res.ok) { alert(result.msg || "Erro ao entrar na sala."); return; }
+      localStorage.setItem('sala', nomeSala);
+      salaAtual = nomeSala;
+      window.location.href = `/chat?sala=${encodeURIComponent(nomeSala)}&usuario=${encodeURIComponent(apelido)}`;
+    } catch (err) { alert("Erro ao processar a entrada na sala."); }
+  }
+
+  atualizarSalasFixas();
+  atualizarSalasUsuario();
+  setInterval(atualizarSalasUsuario, 30000);
+</script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cadastro - Teologando</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    main {
+      max-width: 540px;
+      margin: 3rem auto;
+      padding: 2rem 1.5rem;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.09);
+      text-align: center;
+    }
+    .form-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      justify-content: center;
+    }
+    .form-group input {
+      flex: 1 1 200px;
+      min-width: 170px;
+      padding: 0.85rem;
+      font-size: 1.05rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .btn {
+      background: #00b894;
+      color: #fff;
+      font-weight: bold;
+      padding: 0.95rem 2.3rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.2s;
+    }
+    .btn:hover {
+      background: #019172;
+    }
+    .status {
+      margin: 1.5rem 0 0 0;
+      color: #003366;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<div class="top-bar"><a href="/apoie.html" style="color:white;">APOIE O PROJETO E GANHE UM PRESENTE!</a></div>
+<div class="header-logo"><div class="logo">O Teólogo</div></div>
+<nav class="menu">
+  <a href="/">Início</a>
+  <a href="/salas">Salas Disponíveis</a>
+  <a href="/criar">Criar Nova Sala</a>
+  <a href="/auth">Login/Logout</a>
+  <a href="/apoie.html">App Mobile</a>
+</nav>
+
+<main>
+  <h2>Cadastro de Novo Usuário</h2>
+  <form id="form-cadastro">
+    <div class="form-group">
+      <input type="text" id="cadastro-nome" placeholder="Nome" required />
+      <input type="text" id="cadastro-sobrenome" placeholder="Sobrenome" required />
+      <input type="date" id="cadastro-nascimento" placeholder="Data de Nascimento" required />
+      <input type="text" id="cadastro-rg" placeholder="RG" required />
+      <input type="text" id="cadastro-cpf" placeholder="CPF" required />
+      <input type="tel" id="cadastro-celular" placeholder="Celular" required />
+      <input type="text" id="cadastro-cep" placeholder="CEP" required />
+      <input type="text" id="cadastro-rua" placeholder="Rua" required />
+      <input type="text" id="cadastro-numero" placeholder="Número" required />
+      <input type="text" id="cadastro-cidade" placeholder="Cidade" required />
+      <input type="text" id="cadastro-estado" placeholder="Estado" required />
+      <input type="text" id="cadastro-pais" placeholder="País" required />
+      <input type="text" id="cadastro-apelido" placeholder="Apelido de Login" required />
+      <input type="password" id="cadastro-senha" placeholder="Senha" required />
+    </div>
+    <button type="submit" class="btn">Cadastrar</button>
+  </form>
+  <div class="status" id="status-msg"></div>
+</main>
+
+<footer>
+  © 2025 O Teólogo. Todos os direitos reservados.
+</footer>
+
+<script>
+  document.getElementById('form-cadastro').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const dados = {
+      nome: document.getElementById('cadastro-nome').value,
+      sobrenome: document.getElementById('cadastro-sobrenome').value,
+      nascimento: document.getElementById('cadastro-nascimento').value,
+      rg: document.getElementById('cadastro-rg').value,
+      cpf: document.getElementById('cadastro-cpf').value,
+      celular: document.getElementById('cadastro-celular').value,
+      cep: document.getElementById('cadastro-cep').value,
+      rua: document.getElementById('cadastro-rua').value,
+      numero: document.getElementById('cadastro-numero').value,
+      cidade: document.getElementById('cadastro-cidade').value,
+      estado: document.getElementById('cadastro-estado').value,
+      pais: document.getElementById('cadastro-pais').value,
+      login: document.getElementById('cadastro-apelido').value,
+      senha: document.getElementById('cadastro-senha').value
+    };
+
+    try {
+      const res = await fetch('/api/auth/cadastrar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dados)
+      });
+
+      const data = await res.json();
+      // Exiba exatamente a mensagem que vem do backend!
+      document.getElementById('status-msg').textContent = data.msg || 'Erro no cadastro.';
+      if (res.ok) {
+        setTimeout(() => window.location.href = '/auth', 1200);
+      }
+    } catch (err) {
+      document.getElementById('status-msg').textContent = 'Erro na requisição de cadastro.';
+    }
+  });
+</script>
+
+
+</body>
+</html>

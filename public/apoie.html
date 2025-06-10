@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Teologando - Início</title>
+  <link rel="stylesheet" href="styles.css?v=1" />
+</head>
+<body>
+
+<div class="top-bar"><a href="/apoie.html" style="color:white;">APOIE O PROJETO E GANHE UM PRESENTE!</a></div>
+<div class="header-logo"><div class="logo">O Teólogo</div></div>
+<nav class="menu">
+  <a href="/">Início</a>
+  <a href="/salas">Salas Disponíveis</a>
+  <a href="/criar">Criar Nova Sala</a>
+  <a href="/auth">Login/Logout</a>
+  <a href="/apoie.html">App Mobile</a>
+  <span id="userStatus">Logado como: <span id="apelido"></span></span>
+</nav>
+
+<main>
+  <h1>APOIE <span class="destaque">O Teólogo</span></h1>
+  <div class="chamada">
+    Junte-se a uma jornada de estudo e paixão pela Palavra! <br>
+    <span class="destaque">O Teólogo</span> é uma iniciativa privada, feita com zelo e compromisso, para levar conhecimento teológico de verdade a todos que querem crescer, ensinar, pregar e viver o Evangelho.
+  </div>
+  <div class="impacto">
+    <strong>Por que apoiar?</strong><br>
+    Somos movidos por um propósito: <b>formar uma geração mais preparada e apaixonada por Deus</b>. Cada doação fortalece este projeto, mantém o site no ar, permite a produção de novos conteúdos, ferramentas de estudo e amplia o alcance do Reino. <br><br>
+    <span style="color:#b68c12; font-size: 1.8em;"><b>Seu apoio faz toda a diferença!</b></span>
+    <p></p> </div>
+  <div style="font-size:1.17rem; text-align:center; margin-bottom:1.5em;">
+    <span class="destaque">Contribua com qualquer valor</span> pelo QR Code abaixo:<br>
+    <span class="small">Rápido, fácil e seguro.</span>
+  </div>
+  <div class="qr-box">
+    <img src="img/QrCode.png" alt="QR Code para doação" class="qr-img" />
+    <div>
+      <p></p><b>Doe e ajude a espalhar o conhecimento!</b><br>
+      <span class="small">Aponte a câmera do seu celular e faça sua contribuição.</span>
+      <br>
+      <button class="botao-doar" onclick="alert('Aponte seu app do banco ou Pix para o QR code ao lado!')">Doar agora</button>
+    </div>
+  </div>
+  <div style="text-align:center; font-size:1.14rem; margin-bottom:1.4em;">
+    <p></p>  <b>Quem doar acima de <span class="destaque">R$ 10,00</span> receberá um presente especial!</b>
+  </div>
+  <div class="comprovante">
+    <img src="img/livro.png" alt="Capa Livro Personagens Bíblicos A a Z" class="capa-livro"/>
+    <div>
+      <p></p><b>Livro Digital Exclusivo</b>:<br>
+      <span class="destaque">Enciclopédia da Vida dos Personagens Bíblicos – De A a Z</span><br>
+      <span class="small">A vida dos principais personagens bíblicos, em detalhes e curiosidades para sua edificação!</span>
+      <br><br>
+      <span class="small">Envie o comprovante da sua doação pelo QR code acima para receber o seu livro digital diretamente em seu e-mail</span>
+    </div>
+  </div>
+  <div class="comprovante" style="justify-content:center; margin-bottom:0.7em;">
+
+    <span class="small">
+      Envie seu comprovante para <br>
+     <p></p> <b style="font-size:1.11em; color:#003366;">omeuteologo@gmail.com</b><br>
+    </span>
+  </div>
+  <div style="text-align:center; font-size:1.01rem; color:#444; margin-top:1.5em;">
+    <b>Toda doação é bem-vinda.</b> Com você, o conhecimento teológico alcança mais vidas!
+  </div>
+</main>
+
+<footer>
+  © 2025 O Teólogo. Todos os direitos reservados.
+</footer>
+<script>
+  const apelido = localStorage.getItem('apelido');
+  if (apelido) document.getElementById('apelido').textContent = apelido;
+</script>
+
+
+</body>
+</html>

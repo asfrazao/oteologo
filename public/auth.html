@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Autenticação - Teologando</title>
+    <link rel="stylesheet" href="styles.css"/>
+    <style>
+        main {
+            max-width: 420px;
+            margin: 3rem auto;
+            padding: 2.5rem 1.5rem 1.5rem 1.5rem;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+            text-align: center;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .form-group input {
+            padding: 0.9rem;
+            font-size: 1.05rem;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+        .btn-row {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 0.7rem;
+        }
+        .btn, .btn-logout {
+            width: 50%;
+            background: #007bff;
+            color: #fff;
+            font-weight: bold;
+            padding: 0.9rem 0;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+            margin: 0;
+            display: inline-block;
+        }
+        .btn:hover, .btn-logout:hover {
+            background: #0056b3;
+        }
+        .btn-cadastrar {
+            display: block;
+            width: 100%;
+            background: #00b894;
+            color: #fff;
+            font-weight: bold;
+            padding: 0.95rem 0;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+            margin: 1.2rem 0 0 0;
+        }
+        .btn-cadastrar:hover {
+            background: #019172;
+        }
+        .status {
+            margin: 1.5rem 0 0 0;
+            color: #003366;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-bar"><a href="/apoie.html" style="color:white;">APOIE O PROJETO E GANHE UM PRESENTE!</a></div>
+<div class="header-logo"><div class="logo">O Teólogo</div></div>
+<nav class="menu">
+    <a href="/">Início</a>
+    <a href="/salas">Salas Disponíveis</a>
+    <a href="/criar">Criar Nova Sala</a>
+    <a href="/auth">Login/Logout</a>
+    <a href="/apoie.html">App Mobile</a>
+    <span id="userStatus">Logado como: <span id="apelido"></span></span>
+</nav>
+
+<main>
+    <h2>Login</h2>
+    <div>
+        <div class="form-group">
+            <input type="text" id="login-apelido" placeholder="Apelido de Login" required autocomplete="off" />
+            <input type="password" id="login-senha" placeholder="Senha" required autocomplete="off" />
+        </div>
+    </div>
+    <div class="btn-row">
+        <button class="btn" id="entrar-btn">Entrar</button>
+        <button type="button" class="btn-logout" id="logout-btn">Sair</button>
+    </div>
+    <button class="btn-cadastrar" id="cadastrar-btn" type="button">Cadastrar</button>
+    <div class="status" id="status-msg"></div>
+</main>
+
+<footer>
+    © 2025 O Teólogo. Todos os direitos reservados.
+</footer>
+
+<script>
+    async function realizarLogin() {
+        const apelido = document.getElementById('login-apelido').value;
+        const senha = document.getElementById('login-senha').value;
+        if (!apelido || !senha) {
+            document.getElementById('status-msg').textContent = 'Preencha todos os campos!';
+            return;
+        }
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({login: apelido, senha})
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                // CORREÇÃO: salva accessToken e refreshToken corretamente!
+                localStorage.setItem('token', data.accessToken);
+                localStorage.setItem('refreshToken', data.refreshToken);
+                localStorage.setItem('apelido', apelido);
+                document.getElementById('status-msg').textContent = 'Login realizado com sucesso!';
+                setTimeout(() => window.location.href = '/salas', 900);
+            } else {
+                document.getElementById('status-msg').textContent = data.msg || 'Erro ao realizar login.';
+            }
+        } catch (err) {
+            document.getElementById('status-msg').textContent = 'Erro na requisição de login.';
+        }
+    }
+
+    // Botão Entrar
+    document.getElementById('entrar-btn').addEventListener('click', (e) => {
+        e.preventDefault();
+        realizarLogin();
+    });
+
+    // Enter nos campos também faz login
+    document.getElementById('login-senha').addEventListener('keydown', function (e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            realizarLogin();
+        }
+    });
+    document.getElementById('login-apelido').addEventListener('keydown', function (e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            realizarLogin();
+        }
+    });
+
+    // Botão Sair
+    document.getElementById('logout-btn').addEventListener('click', () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('apelido');
+        document.getElementById('status-msg').textContent = 'Logout realizado!';
+        setTimeout(() => window.location.href = '/auth', 900);
+    });
+
+    // Botão Cadastrar
+    document.getElementById('cadastrar-btn').addEventListener('click', function () {
+        window.location.href = '/cadastro';
+    });
+
+    // Status Usuário
+        const apelido = localStorage.getItem('apelido');
+        if (apelido) document.getElementById('apelido').textContent = apelido;
+
+
+</script>
+
+</body>
+</html>

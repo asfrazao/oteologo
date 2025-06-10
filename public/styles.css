@@ -1,0 +1,232 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f4f6f8;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+.top-bar {
+  background-color: #005c99;
+  color: white;
+  text-align: center;
+  padding: 5px 0;
+  font-size: 14px;
+}
+
+.header-logo {
+  background-color: #005c99;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.header-logo .logo {
+  font-size: 28px;
+  font-weight: bold;
+  color: white;
+}
+
+nav.menu {
+  background-color: #005c99;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 25px;
+  padding: 12px 0;
+}
+
+nav.menu #userStatus {
+  color: white;
+  font-weight: bold;
+  padding: 6px 12px;
+}
+
+nav a {
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  padding: 6px 12px;
+  transition: all 0.3s ease;
+}
+
+nav a:hover {
+  color: #DDEEFF;
+}
+
+nav a.login-button {
+  background-color: white;
+  color: #005c99;
+  border-radius: 12px;
+  padding: 6px 16px;
+  font-weight: bold;
+}
+
+nav a.login-button:hover {
+  background-color: #e6f0f8;
+  color: #003366;
+}
+
+main {
+  max-width: 960px;
+  margin: 2rem auto;
+  padding: 1rem;
+  text-align: center;
+}
+
+.hero {
+  background: linear-gradient(to bottom right, #DDEEFF, #ffffff);
+  border-radius: 12px;
+  padding: 3rem 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.hero h1 {
+  font-size: 2.5rem;
+  color: #003366;
+  margin-bottom: 1rem;
+}
+
+.hero p {
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.hero .btn {
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.hero .btn:hover {
+  background-color: #0056b3;
+}
+
+section h2 {
+  font-size: 1.75rem;
+  margin-bottom: 1.5rem;
+  color: #003366;
+}
+
+footer {
+  background-color: #003366;
+  color: #fff;
+  padding: 1rem;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+/* Estilo responsivo */
+@media (max-width: 600px) {
+  .header-logo {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  nav.menu {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
+
+/* ===== Elementos adicionais usados em páginas novas ===== */
+
+/* Layout de formulário em auth.html */
+form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+/* Inputs e botões */
+input, button {
+  padding: 0.5rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+button {
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Área de status abaixo de formulários */
+.status {
+  text-align: center;
+  margin-top: 1rem;
+  font-weight: bold;
+  color: #005c99;
+}
+
+/* Cartão de sala (usado em salas.html) */
+.sala {
+  background-color: white;
+  padding: 1rem 1.5rem;
+  margin: 1rem auto;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  max-width: 600px;
+  text-align: left;
+}
+
+.sala h3 {
+  margin: 0;
+  color: #003366;
+}
+
+.sala p {
+  margin: 0.5rem 0;
+  color: #555;
+}
+
+.sala button {
+  background-color: #007BFF;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.sala button:hover {
+  background-color: #0056b3;
+}
+
+.capa-livro {
+  width: 200px;
+  max-width: 300px;
+  border-radius: 10px;
+  box-shadow: 0 4px 18px #2223;
+  margin: 0 auto; /* Altera para centralizar horizontalmente */
+  display: block;
+}
+
+.qr-img {
+  width: 120px;
+  max-width: 150px;
+  border-radius: 10px;
+  box-shadow: 0 4px 18px #2223;
+  margin: 0 auto; /* Altera para centralizar horizontalmente */
+  display: block;
+}

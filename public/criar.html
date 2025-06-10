@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Criar Nova Sala - Teologando</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+        main {
+            max-width: 480px;
+            margin: 3rem auto;
+            padding: 2.2rem 1.5rem;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+        .btn {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 0.9rem 2.1rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 1.2rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn:disabled { background: #b2c3da; color: #e2e8f7; cursor: not-allowed; }
+        .input {
+            width: 100%;
+            padding: 0.9rem;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 1.1rem;
+            margin-bottom: 1.1rem;
+        }
+        #status-msg { color: #c00; margin-top: 1rem; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="top-bar"><a href="/apoie.html" style="color:white;">APOIE O PROJETO E GANHE UM PRESENTE!</a></div>
+<div class="header-logo"><div class="logo">O Teólogo</div></div>
+<nav class="menu">
+    <a href="/">Início</a>
+    <a href="/salas">Salas Disponíveis</a>
+    <a href="/criar">Criar Nova Sala</a>
+    <a href="/auth">Login/Logout</a>
+    <a href="/apoie.html">App Mobile</a>
+    <span id="userStatus">Logado como: <span id="apelido"></span></span>
+</nav>
+
+<main>
+    <h2>Criar Nova Sala</h2>
+    <form id="form-criar" autocomplete="off">
+        <label for="nome-sala">Nome da sala:</label>
+        <input class="input" id="nome-sala" type="text" minlength="3" maxlength="64" required autocomplete="off" />
+        <button type="submit" class="btn" id="criar-btn">Criar Sala</button>
+    </form>
+    <div id="status-msg"></div>
+</main>
+<footer>
+    © 2025 O Teólogo. Todos os direitos reservados.
+</footer>
+
+<script>
+    // Função fetch universal com refresh token
+    async function fetchComRefresh(url, options = {}, tentarRefresh = true) {
+        let token = localStorage.getItem('token');
+        options.headers = options.headers || {};
+        if (token) options.headers['Authorization'] = `Bearer ${token}`;
+        let res = await fetch(url, { ...options, credentials: 'include' });
+        if (res.status === 401 && tentarRefresh) {
+            const refreshRes = await fetch('/api/auth/refresh', {
+                method: 'POST',
+                credentials: 'include'
+            });
+            const refreshData = await refreshRes.json();
+            if (refreshRes.ok && refreshData.accessToken) {
+                localStorage.setItem('token', refreshData.accessToken);
+                options.headers['Authorization'] = `Bearer ${refreshData.accessToken}`;
+                return await fetch(url, { ...options, credentials: 'include' });
+            } else {
+                localStorage.clear();
+                window.location.href = '/auth';
+                return res;
+            }
+        }
+        return res;
+    }
+
+    // Exibe apelido logado
+    const apelido = localStorage.getItem('apelido');
+    if (apelido) document.getElementById('apelido').textContent = apelido;
+
+    document.getElementById('form-criar').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const nome = document.getElementById('nome-sala').value.trim();
+        await criarESeguirParaSala(nome);
+    });
+
+    async function criarESeguirParaSala(nome) {
+        const statusMsg = document.getElementById('status-msg');
+        const btnCriar = document.getElementById('criar-btn');
+        const apelido = localStorage.getItem('apelido');
+        if (!nome) {
+            statusMsg.textContent = 'Digite um nome para a sala.';
+            btnCriar.disabled = false;
+            return;
+        }
+        btnCriar.disabled = true;
+        statusMsg.textContent = 'Criando sala...';
+        try {
+            const res = await fetchComRefresh('/api/salas/usuario', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nome })
+            });
+            const data = await res.json();
+            if (res.ok && data.salaNome) {
+                statusMsg.textContent = data.msg || 'Indo para sua sala...';
+                localStorage.setItem('sala', data.salaNome);
+                setTimeout(() => {
+                    window.location.href = `/chat?sala=${encodeURIComponent(data.salaNome)}&usuario=${encodeURIComponent(apelido)}`;
+                }, 700);
+            } else if (!res.ok && (data.msg || '').toLowerCase().includes('já criou uma sala')) {
+                // Busca nome da sala já criada para este usuário e redireciona automaticamente
+                statusMsg.textContent = 'Você já criou uma sala. Redirecionando...';
+                try {
+                    const lista = await fetchComRefresh('/api/salas/usuario');
+                    const salas = await lista.json();
+                    let salaUsuario = null;
+                    if (Array.isArray(salas)) {
+                        salaUsuario = salas.find(sala => sala.criador === apelido);
+                    }
+                    if (salaUsuario && salaUsuario.nome) {
+                        localStorage.setItem('sala', salaUsuario.nome);
+                        setTimeout(() => {
+                            window.location.href = `/chat?sala=${encodeURIComponent(salaUsuario.nome)}&usuario=${encodeURIComponent(apelido)}`;
+                        }, 700);
+                    } else {
+                        statusMsg.textContent = 'Você já criou uma sala, mas não foi possível localizar o nome dela.';
+                    }
+                } catch (e) {
+                    statusMsg.textContent = 'Você já criou uma sala, mas não foi possível localizar o nome dela.';
+                }
+            } else {
+                statusMsg.textContent = data.msg || 'Erro ao criar sala.';
+            }
+        } catch (err) {
+            statusMsg.textContent = 'Erro ao criar sala.';
+        }
+        btnCriar.disabled = false;
+    }
+</script>
+</body>
+</html>
