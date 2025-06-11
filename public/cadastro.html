@@ -6,6 +6,7 @@
   <title>Cadastro - Teologando</title>
   <link rel="stylesheet" href="styles.css"/>
   <style>
+    /* Estilos existentes */
     main {
       max-width: 540px;
       margin: 3rem auto;
@@ -49,6 +50,65 @@
       color: #003366;
       font-weight: bold;
     }
+    /* Novos estilos para o campo de senha com olhinho */
+    .password-container {
+      position: relative;
+      flex: 1 1 200px; /* Mantém a flexibilidade individual */
+      min-width: 170px;
+    }
+    .password-toggle {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #888;
+      font-size: 0.9em;
+      user-select: none; /* Evita seleção de texto */
+    }
+    .error-message {
+      color: #ff0000;
+      font-size: 0.85rem;
+      margin-top: -0.8rem;
+      margin-bottom: 0.5rem;
+      text-align: left;
+      /* Ajustado para não forçar 100% de largura fora do .password-pair */
+      /* width: 100%; */
+      padding-left: 0.5em;
+    }
+
+    /* === NOVOS ESTILOS PARA ALINHAR SENHAS LADO A LADO === */
+    .password-pair-wrapper { /* Novo wrapper para as senhas e seus erros, para que fiquem lado a lado */
+      display: flex;
+      flex-wrap: wrap; /* Permite quebrar em telas pequenas */
+      gap: 1rem; /* Espaçamento entre os campos de senha */
+      flex: 1 1 100%; /* Ocupa a largura total disponível no form-group */
+      justify-content: center;
+    }
+
+    .password-pair-wrapper .password-container {
+      flex: 1 1 calc(50% - 0.5rem); /* Ajusta para ocupar ~metade do espaço com gap */
+      min-width: 140px; /* Reduz um pouco o min-width para caber em telas menores */
+    }
+
+    /* Estilo para que cada mensagem de erro de senha fique abaixo do seu campo respectivo */
+    .password-pair-wrapper .password-field-with-error {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 calc(50% - 0.5rem); /* Ocupa ~metade do wrapper */
+      min-width: 140px; /* Garante que o campo + erro tenha uma largura mínima */
+    }
+    .password-pair-wrapper .password-field-with-error .error-message {
+      margin-top: 0.2rem; /* Ajusta a margem para ficar abaixo do campo */
+      margin-bottom: 1rem; /* Espaçamento antes do próximo item */
+      width: auto; /* Deixa a largura automática para o flexbox */
+      align-self: flex-start; /* Alinha a mensagem de erro à esquerda */
+    }
+    /* Estilo para ajustar a margem inferior dos containers quando estão dentro do novo wrapper,
+       para que o espaço de 1rem do .form-group não seja adicionado duplamente */
+    .form-group > .password-pair-wrapper {
+      margin-bottom: 0; /* Remove a margem inferior duplicada do form-group */
+    }
   </style>
 </head>
 <body>
@@ -70,17 +130,33 @@
       <input type="text" id="cadastro-nome" placeholder="Nome" required />
       <input type="text" id="cadastro-sobrenome" placeholder="Sobrenome" required />
       <input type="date" id="cadastro-nascimento" placeholder="Data de Nascimento" required />
-      <input type="text" id="cadastro-rg" placeholder="RG" required />
-      <input type="text" id="cadastro-cpf" placeholder="CPF" required />
-      <input type="tel" id="cadastro-celular" placeholder="Celular" required />
-      <input type="text" id="cadastro-cep" placeholder="CEP" required />
-      <input type="text" id="cadastro-rua" placeholder="Rua" required />
-      <input type="text" id="cadastro-numero" placeholder="Número" required />
-      <input type="text" id="cadastro-cidade" placeholder="Cidade" required />
-      <input type="text" id="cadastro-estado" placeholder="Estado" required />
-      <input type="text" id="cadastro-pais" placeholder="País" required />
+      <div class="error-message" id="error-nascimento"></div>
+
+      <input type="email" id="cadastro-email" placeholder="E-mail" required />
+      <div class="error-message" id="error-email"></div>
+
+      <input type="tel" id="cadastro-celular" placeholder="Celular (DD) 9XXXX-XXXX" pattern="^\([1-9]{2}\) 9[0-9]{4}-[0-9]{4}$" maxlength="15" required />
+      <div class="error-message" id="error-celular"></div>
+
       <input type="text" id="cadastro-apelido" placeholder="Apelido de Login" required />
-      <input type="password" id="cadastro-senha" placeholder="Senha" required />
+
+      <div class="password-pair-wrapper">
+        <div class="password-field-with-error">
+          <div class="password-container">
+            <input type="password" id="cadastro-senha" placeholder="Senha" required />
+            <span class="password-toggle" data-target="cadastro-senha">👁️</span>
+          </div>
+          <div class="error-message" id="error-senha"></div>
+        </div>
+
+        <div class="password-field-with-error">
+          <div class="password-container">
+            <input type="password" id="cadastro-confirmar-senha" placeholder="Confirmar Senha" required />
+            <span class="password-toggle" data-target="cadastro-confirmar-senha">👁️</span>
+          </div>
+          <div class="error-message" id="error-confirmar-senha"></div>
+        </div>
+      </div>
     </div>
     <button type="submit" class="btn">Cadastrar</button>
   </form>
@@ -92,23 +168,165 @@
 </footer>
 
 <script>
+  // Funções de validação e utilitários
+  function showError(elementId, message) {
+    const errorElement = document.getElementById(`error-${elementId}`);
+    if (errorElement) {
+      errorElement.textContent = message;
+      // Adicionar um pouco de feedback visual, se quiser
+      const inputElement = document.getElementById(elementId);
+      if (inputElement) inputElement.style.borderColor = '#ff0000';
+    }
+  }
+
+  function clearError(elementId) {
+    const errorElement = document.getElementById(`error-${elementId}`);
+    if (errorElement) {
+      errorElement.textContent = '';
+      const inputElement = document.getElementById(elementId);
+      if (inputElement) inputElement.style.borderColor = '#ccc'; // Volta ao normal
+    }
+  }
+
+  function validateEmail(email) {
+    const regex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return regex.test(String(email).toLowerCase());
+  }
+
+  function validateAge(birthDate) {
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age >= 15;
+  }
+
+  function formatPhoneNumber(input) {
+    let value = input.value.replace(/\D/g, ''); // Remove tudo que não for dígito
+    // Adiciona parênteses para DDD
+    if (value.length > 0) {
+      value = `(${value}`;
+    }
+    if (value.length > 3) {
+      value = `${value.substring(0, 3)}) ${value.substring(3)}`;
+    }
+    // Adiciona traço para 9XXXX-XXXX
+    if (value.length > 10) {
+      value = `${value.substring(0, 10)}-${value.substring(10, 14)}`;
+    } else if (value.length > 9) { // Para o caso de 8 dígitos após o DDD (sem o 9 extra)
+      value = `${value.substring(0, 9)}-${value.substring(9, 13)}`;
+    }
+    input.value = value;
+  }
+
+  // Event Listeners para validações em tempo real e formatação
+  document.getElementById('cadastro-nascimento').addEventListener('change', (e) => {
+    clearError('nascimento');
+    if (e.target.value) {
+      if (!validateAge(e.target.value)) {
+        showError('nascimento', 'Você deve ter pelo menos 15 anos.');
+      }
+    }
+  });
+
+  document.getElementById('cadastro-email').addEventListener('input', (e) => {
+    clearError('email');
+    if (e.target.value && !validateEmail(e.target.value)) {
+      showError('email', 'Formato de e-mail inválido.');
+    }
+  });
+
+  document.getElementById('cadastro-celular').addEventListener('input', (e) => {
+    formatPhoneNumber(e.target);
+    clearError('celular');
+    // A validação completa com regex ocorre no submit, mas a formatação é contínua.
+  });
+
+  // Funcionalidade "Olhinho" para senhas
+  document.querySelectorAll('.password-toggle').forEach(toggle => {
+    toggle.addEventListener('click', (e) => {
+      const targetId = e.target.dataset.target;
+      const passwordField = document.getElementById(targetId);
+      if (passwordField.type === 'password') {
+        passwordField.type = 'text';
+        e.target.textContent = '🙈'; // Olho fechado
+      } else {
+        passwordField.type = 'password';
+        e.target.textContent = '👁️'; // Olho aberto
+      }
+    });
+  });
+
   document.getElementById('form-cadastro').addEventListener('submit', async (e) => {
     e.preventDefault();
+    document.getElementById('status-msg').textContent = ''; // Limpa mensagens anteriores
+    let formIsValid = true;
+
+    // Limpa todos os erros antes de revalidar
+    clearError('nascimento');
+    clearError('email');
+    clearError('celular');
+    clearError('senha');
+    clearError('confirmar-senha');
+
+    const nome = document.getElementById('cadastro-nome').value.trim();
+    const sobrenome = document.getElementById('cadastro-sobrenome').value.trim();
+    const nascimento = document.getElementById('cadastro-nascimento').value;
+    const email = document.getElementById('cadastro-email').value.trim();
+    const celular = document.getElementById('cadastro-celular').value.trim();
+    const apelido = document.getElementById('cadastro-apelido').value.trim();
+    const senha = document.getElementById('cadastro-senha').value;
+    const confirmarSenha = document.getElementById('cadastro-confirmar-senha').value;
+
+    // Validações no frontend (duplicação de validação no backend é essencial!)
+    if (!nome) { showError('nome', 'Nome é obrigatório.'); formIsValid = false; }
+    if (!sobrenome) { showError('sobrenome', 'Sobrenome é obrigatório.'); formIsValid = false; }
+    if (!nascimento) { showError('nascimento', 'Data de Nascimento é obrigatória.'); formIsValid = false; }
+    else if (!validateAge(nascimento)) {
+      showError('nascimento', 'Você deve ter pelo menos 15 anos.');
+      formIsValid = false;
+    }
+
+    if (!email) { showError('email', 'E-mail é obrigatório.'); formIsValid = false; }
+    else if (!validateEmail(email)) {
+      showError('email', 'Formato de e-mail inválido.');
+      formIsValid = false;
+    }
+
+    const celularRegex = /^\([1-9]{2}\) 9[0-9]{4}-[0-9]{4}$/;
+    if (!celular) { showError('celular', 'Celular é obrigatório.'); formIsValid = false; }
+    else if (!celularRegex.test(celular)) {
+      showError('celular', 'Formato de celular inválido (DDD) 9XXXX-XXXX.');
+      formIsValid = false;
+    }
+
+    if (!apelido) { showError('apelido', 'Apelido é obrigatório.'); formIsValid = false; }
+    // Apelido: "Sem validação de maiuscula e minuscula para o Login" - isso será tratado no backend
+
+    if (!senha) { showError('senha', 'Senha é obrigatória.'); formIsValid = false; }
+    if (!confirmarSenha) { showError('confirmar-senha', 'Confirmação de senha é obrigatória.'); formIsValid = false; }
+    else if (senha !== confirmarSenha) {
+      showError('confirmar-senha', 'As senhas não coincidem.');
+      formIsValid = false;
+    }
+    // Adicionar validação de complexidade da senha se desejar (ex: min. 8 caracteres, maiúsculas, minúsculas, números, símbolos)
+
+    if (!formIsValid) {
+      document.getElementById('status-msg').textContent = 'Por favor, corrija os erros no formulário.';
+      return;
+    }
+
     const dados = {
-      nome: document.getElementById('cadastro-nome').value,
-      sobrenome: document.getElementById('cadastro-sobrenome').value,
-      nascimento: document.getElementById('cadastro-nascimento').value,
-      rg: document.getElementById('cadastro-rg').value,
-      cpf: document.getElementById('cadastro-cpf').value,
-      celular: document.getElementById('cadastro-celular').value,
-      cep: document.getElementById('cadastro-cep').value,
-      rua: document.getElementById('cadastro-rua').value,
-      numero: document.getElementById('cadastro-numero').value,
-      cidade: document.getElementById('cadastro-cidade').value,
-      estado: document.getElementById('cadastro-estado').value,
-      pais: document.getElementById('cadastro-pais').value,
-      login: document.getElementById('cadastro-apelido').value,
-      senha: document.getElementById('cadastro-senha').value
+      nome,
+      sobrenome,
+      nascimento,
+      email, // Novo campo
+      celular: celular.replace(/\D/g, ''), // Envia apenas os dígitos para o backend
+      login: apelido,
+      senha
     };
 
     try {
@@ -119,17 +337,16 @@
       });
 
       const data = await res.json();
-      // Exiba exatamente a mensagem que vem do backend!
       document.getElementById('status-msg').textContent = data.msg || 'Erro no cadastro.';
       if (res.ok) {
         setTimeout(() => window.location.href = '/auth', 1200);
       }
     } catch (err) {
-      document.getElementById('status-msg').textContent = 'Erro na requisição de cadastro.';
+      console.error('Erro na requisição de cadastro:', err);
+      document.getElementById('status-msg').textContent = 'Erro na requisição de cadastro. Tente novamente.';
     }
   });
 </script>
-
 
 </body>
 </html>
