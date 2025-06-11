@@ -19,18 +19,39 @@
     .form-group {
       display: flex;
       flex-wrap: wrap;
-      gap: 1rem;
+      gap: 1rem; /* Espaçamento entre os wrappers de campo */
       margin-bottom: 2rem;
       justify-content: center;
+      align-items: flex-start; /* Alinha os itens flexíveis (wrappers) pelo topo */
     }
-    .form-group input {
-      flex: 1 1 200px;
-      min-width: 170px;
+
+    /* === NOVO: Wrapper para cada campo de formulário e sua mensagem de erro === */
+    .form-field-wrapper {
+      display: flex;
+      flex-direction: column; /* Organiza o input e o erro verticalmente */
+      /* Flexibilidade ajustada para ocupar a largura sem sobreposição.
+         "calc(50% - 0.5rem)" permite dois por linha com um gap de 1rem entre eles.
+         Para inputs gerais, podemos dar mais flexibilidade (ex: 200px de base). */
+      flex: 1 1 200px; /* Garante que cada campo se ajuste e quebre a linha se necessário */
+      min-width: 170px; /* Largura mínima para o wrapper do campo */
+      margin-bottom: 0; /* O gap do form-group já controla o espaço vertical */
+    }
+
+    /* Input dentro de qualquer wrapper de campo */
+    .form-field-wrapper input,
+    .password-container input { /* Aplica-se também a inputs dentro de password-container */
+      width: 100%; /* Input ocupa 100% da largura do seu wrapper */
       padding: 0.85rem;
       font-size: 1.05rem;
       border-radius: 8px;
       border: 1px solid #ccc;
+      box-sizing: border-box; /* Garante que padding e border não aumentem a largura */
     }
+    /* Remover flex dos inputs diretamente dentro de form-group */
+    .form-group > input { /* Se houver inputs diretos, remove a flexibilidade */
+      flex: none;
+    }
+
     .btn {
       background: #00b894;
       color: #fff;
@@ -50,11 +71,10 @@
       color: #003366;
       font-weight: bold;
     }
-    /* Novos estilos para o campo de senha com olhinho */
+    /* Estilos para o campo de senha com olhinho */
     .password-container {
       position: relative;
-      flex: 1 1 200px; /* Mantém a flexibilidade individual */
-      min-width: 170px;
+      width: 100%; /* Ocupa 100% da largura do seu pai (.form-field-wrapper ou .password-field-with-error) */
     }
     .password-toggle {
       position: absolute;
@@ -64,51 +84,37 @@
       cursor: pointer;
       color: #888;
       font-size: 0.9em;
-      user-select: none; /* Evita seleção de texto */
+      user-select: none;
     }
     .error-message {
       color: #ff0000;
       font-size: 0.85rem;
-      margin-top: -0.8rem;
-      margin-bottom: 0.5rem;
+      margin-top: 0.2rem; /* Espaço entre o input e a mensagem de erro */
+      margin-bottom: 0; /* Ajuste para o espaçamento ser controlado pelo gap do flexbox pai */
       text-align: left;
-      /* Ajustado para não forçar 100% de largura fora do .password-pair */
-      /* width: 100%; */
-      padding-left: 0.5em;
+      align-self: flex-start; /* Alinha a mensagem de erro à esquerda dentro do flex-direction: column */
     }
 
-    /* === NOVOS ESTILOS PARA ALINHAR SENHAS LADO A LADO === */
-    .password-pair-wrapper { /* Novo wrapper para as senhas e seus erros, para que fiquem lado a lado */
+    /* === ESTILOS PARA ALINHAR SENHAS LADO A LADO === */
+    /* Este wrapper agora é um item flexível dentro do .form-group */
+    .password-pair-wrapper {
       display: flex;
-      flex-wrap: wrap; /* Permite quebrar em telas pequenas */
-      gap: 1rem; /* Espaçamento entre os campos de senha */
-      flex: 1 1 100%; /* Ocupa a largura total disponível no form-group */
+      flex-wrap: wrap;
+      gap: 1rem; /* Espaçamento entre os dois campos de senha */
+      flex: 1 1 100%; /* Ocupa a largura total para que os dois campos de senha se dividam */
       justify-content: center;
+      margin-bottom: 1rem; /* Espaçamento abaixo do grupo de senhas */
     }
 
-    .password-pair-wrapper .password-container {
-      flex: 1 1 calc(50% - 0.5rem); /* Ajusta para ocupar ~metade do espaço com gap */
-      min-width: 140px; /* Reduz um pouco o min-width para caber em telas menores */
-    }
-
-    /* Estilo para que cada mensagem de erro de senha fique abaixo do seu campo respectivo */
+    /* Cada um dos campos de senha com seu erro dentro do password-pair-wrapper */
     .password-pair-wrapper .password-field-with-error {
       display: flex;
       flex-direction: column;
-      flex: 1 1 calc(50% - 0.5rem); /* Ocupa ~metade do wrapper */
-      min-width: 140px; /* Garante que o campo + erro tenha uma largura mínima */
+      flex: 1 1 calc(50% - 0.5rem); /* Ocupa ~metade do wrapper com gap */
+      min-width: 140px;
+      margin-bottom: 0; /* Remove margem inferior para evitar espaçamento duplicado */
     }
-    .password-pair-wrapper .password-field-with-error .error-message {
-      margin-top: 0.2rem; /* Ajusta a margem para ficar abaixo do campo */
-      margin-bottom: 1rem; /* Espaçamento antes do próximo item */
-      width: auto; /* Deixa a largura automática para o flexbox */
-      align-self: flex-start; /* Alinha a mensagem de erro à esquerda */
-    }
-    /* Estilo para ajustar a margem inferior dos containers quando estão dentro do novo wrapper,
-       para que o espaço de 1rem do .form-group não seja adicionado duplamente */
-    .form-group > .password-pair-wrapper {
-      margin-bottom: 0; /* Remove a margem inferior duplicada do form-group */
-    }
+    /* Nao precisa de input-specific width se o parent já é flex-direction: column e input tem width: 100% */
   </style>
 </head>
 <body>
@@ -127,18 +133,33 @@
   <h2>Cadastro de Novo Usuário</h2>
   <form id="form-cadastro">
     <div class="form-group">
-      <input type="text" id="cadastro-nome" placeholder="Nome" required />
-      <input type="text" id="cadastro-sobrenome" placeholder="Sobrenome" required />
-      <input type="date" id="cadastro-nascimento" placeholder="Data de Nascimento" required />
-      <div class="error-message" id="error-nascimento"></div>
+      <div class="form-field-wrapper">
+        <input type="text" id="cadastro-nome" placeholder="Nome" required />
+        <div class="error-message" id="error-nome"></div>
+      </div>
+      <div class="form-field-wrapper">
+        <input type="text" id="cadastro-sobrenome" placeholder="Sobrenome" required />
+        <div class="error-message" id="error-sobrenome"></div>
+      </div>
+      <div class="form-field-wrapper">
+        <input type="date" id="cadastro-nascimento" placeholder="Data de Nascimento" required />
+        <div class="error-message" id="error-nascimento"></div>
+      </div>
 
-      <input type="email" id="cadastro-email" placeholder="E-mail" required />
-      <div class="error-message" id="error-email"></div>
+      <div class="form-field-wrapper">
+        <input type="email" id="cadastro-email" placeholder="E-mail" required />
+        <div class="error-message" id="error-email"></div>
+      </div>
 
-      <input type="tel" id="cadastro-celular" placeholder="Celular (DD) 9XXXX-XXXX" pattern="^\([1-9]{2}\) 9[0-9]{4}-[0-9]{4}$" maxlength="15" required />
-      <div class="error-message" id="error-celular"></div>
+      <div class="form-field-wrapper">
+        <input type="tel" id="cadastro-celular" placeholder="Celular (DD) 9XXXX-XXXX" pattern="^\([1-9]{2}\) 9[0-9]{4}-[0-9]{4}$" maxlength="15" required />
+        <div class="error-message" id="error-celular"></div>
+      </div>
 
-      <input type="text" id="cadastro-apelido" placeholder="Apelido de Login" required />
+      <div class="form-field-wrapper">
+        <input type="text" id="cadastro-apelido" placeholder="Apelido de Login" required />
+        <div class="error-message" id="error-apelido"></div>
+      </div>
 
       <div class="password-pair-wrapper">
         <div class="password-field-with-error">
@@ -173,7 +194,6 @@
     const errorElement = document.getElementById(`error-${elementId}`);
     if (errorElement) {
       errorElement.textContent = message;
-      // Adicionar um pouco de feedback visual, se quiser
       const inputElement = document.getElementById(elementId);
       if (inputElement) inputElement.style.borderColor = '#ff0000';
     }
@@ -271,6 +291,9 @@
     clearError('celular');
     clearError('senha');
     clearError('confirmar-senha');
+    clearError('nome');
+    clearError('sobrenome');
+    clearError('apelido');
 
     const nome = document.getElementById('cadastro-nome').value.trim();
     const sobrenome = document.getElementById('cadastro-sobrenome').value.trim();
