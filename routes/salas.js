@@ -1,3 +1,10 @@
+
+// Função para destacar @apelido nas mensagens
+function destacarMencoes(texto) {
+  return texto.replace(/@(\w+)/g, '<span class="mention">@$1</span>');
+}
+
+
 const express = require('express');
 const router = express.Router();
 const SalaUsuario = require('../models/SalaUsuario');
