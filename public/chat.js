@@ -64,6 +64,12 @@ socket.on("salaCheia", () => {
   window.location.href = "/salas";
 });
 
+// Implementação da saída da sala e volta para a página inicial
+document.getElementById("btn-sair").addEventListener("click", () => {
+  socket.emit("sairSala", { usuario, sala }); // Avisa o servidor que o usuário está saindo da sala
+  window.location.href = "/"; // Redireciona para a página inicial
+});
+
 // 🧠 AUTOCOMPLETE @MENÇÕES
 
 const inputMsg = document.getElementById("msg");

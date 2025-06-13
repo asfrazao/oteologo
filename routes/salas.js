@@ -136,7 +136,22 @@ router.post('/usuario/:nome/mensagem', auth, async (req, res) => {
 });
 
 // ================= Salas fixas (em memória) ==================
-const salasFixas = ['Escatologia', 'Trindade', 'Livre Arbítrio', 'Soteriologia'];
+const salasFixas = [
+    'Escatologia',
+    'Trindade',
+    'Livre Arbítrio',
+    'Soteriologia',
+    'Bibliologia',
+    'Cristologia',
+    'Ateus',
+    'Católicos',
+    'Pentecostais',
+    'Adventistas',
+    'Presbiterianos',
+    'Batistas',
+    'Testemunhas da Jeova',
+    'Mórmons'
+];
 let participantesSalasFixas = {};
 
 router.post('/:nome/entrar', auth, (req, res) => {
