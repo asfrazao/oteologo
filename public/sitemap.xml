@@ -1,35 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset
-        xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
+    <!-- Página Inicial -->
     <url>
         <loc>https://oteologo.com.br/</loc>
-        <lastmod>2025-06-13</lastmod>
+        <lastmod>2025-06-15</lastmod>
         <priority>1.0</priority>
     </url>
 
+    <!-- Página de Login -->
     <url>
         <loc>https://oteologo.com.br/login.html</loc>
-        <lastmod>2025-06-13</lastmod>
+        <lastmod>2025-06-15</lastmod>
         <priority>0.8</priority>
     </url>
 
+    <!-- Página de Cadastro -->
     <url>
         <loc>https://oteologo.com.br/cadastrar.html</loc>
-        <lastmod>2025-06-13</lastmod>
+        <lastmod>2025-06-15</lastmod>
         <priority>0.8</priority>
     </url>
 
+    <!-- Página de Salas -->
     <url>
         <loc>https://oteologo.com.br/salas.html</loc>
-        <lastmod>2025-06-13</lastmod>
+        <lastmod>2025-06-15</lastmod>
         <priority>0.9</priority>
     </url>
 
+    <!-- Página Criar Nova Sala -->
+    <url>
+        <loc>https://oteologo.com.br/criar.html</loc>
+        <lastmod>2025-06-15</lastmod>
+        <priority>0.8</priority>
+    </url>
+
+    <!-- Página Apoie o Projeto -->
     <url>
         <loc>https://oteologo.com.br/apoie.html</loc>
-        <lastmod>2025-06-13</lastmod>
+        <lastmod>2025-06-15</lastmod>
         <priority>0.7</priority>
+    </url>
+
+    <!-- Página Fale Conosco -->
+    <url>
+        <loc>https://oteologo.com.br/faleconosco.html</loc>
+        <lastmod>2025-06-15</lastmod>
+        <priority>0.6</priority>
     </url>
 
 </urlset>
