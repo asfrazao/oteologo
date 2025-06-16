@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Estudos Teológicos – Teologia Cristã Online | O Teólogo</title>
+
+    <!-- ✅ Meta Description -->
+    <meta name="description" content="Explore estudos teológicos aprofundados em Teologia, Apologética e Antropologia cristã. Cresça na fé com conteúdos bíblicos organizados por áreas doutrinárias.">
+
+    <!-- ✅ Meta Keywords (opcional no Google, mas útil em outros motores) -->
+    <meta name="keywords" content="Estudos Teológicos, Teologia, Bibliologia, Cristologia, Apologética, Bíblia, Antropologia Cristã, O Teólogo">
+
+    <!-- ✅ Author -->
+    <meta name="author" content="O Teólogo">
+
+    <!-- ✅ Robots -->
+    <meta name="robots" content="index, follow">
+
+    <!-- ✅ Open Graph (para compartilhamento no Facebook, LinkedIn, etc) -->
+    <meta property="og:title" content="Estudos Teológicos Online – O Teólogo">
+    <meta property="og:description" content="Plataforma cristã com estudos bíblicos organizados por áreas como Teologia, Apologética e Antropologia.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://oteologo.com.br/estudos/estudos-teologicos.html">
+    <meta property="og:image" content="https://oteologo.com.br/img/logo.png">
+
+    <!-- ✅ Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Estudos Teológicos – O Teólogo">
+    <meta name="twitter:description" content="Cresça espiritualmente com estudos teológicos organizados por áreas bíblicas fundamentais.">
+    <meta name="twitter:image" content="https://oteologo.com.br/img/logo.png">
+
+    <!-- ✅ Canonical -->
+    <link rel="canonical" href="https://oteologo.com.br/estudos/estudos-teologicos.html" />
+
+    <!-- ✅ Favicon -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+
+    <!-- ✅ Estilo -->
+    <link rel="stylesheet" href="/styles.css?v=1" />
+</head>
+
+<body>
+
+<div class="top-bar"><a href="/apoie.html" style="color:white;">APOIE O PROJETO E GANHE UM PRESENTE!</a></div>
+<div class="header-logo"><div class="logo">O Teólogo</div></div>
+
+<nav class="menu">
+    <a href="/">Início</a>
+    <a href="/salas">Salas Disponíveis</a>
+    <a href="/criar">Criar Nova Sala</a>
+    <a href="/auth">Login/Logout</a>
+    <a href="/apoie.html">App Mobile</a>
+    <a href="/estudos/estudos-teologicos.html"> Estudos Teológicos</a>
+    <span id="userStatus">Logado como: <span id="apelido"></span></span>
+</nav>
+
+<main>
+    <div class="hero">
+        <h1>Estudos Teológicos</h1>
+        <p>Aprofunde sua fé com conteúdos sólidos, organizados por áreas fundamentais da teologia cristã.</p>
+    </div>
+
+    <section>
+        <h2>Áreas de Estudo</h2>
+
+        <div class="dropdown-grid">
+
+            <div class="sala dropdown">
+                <button class="dropdown-toggle">Teologia ▾</button>
+                <div class="dropdown-content">
+                    <a href="/estudos/teologia/bibliologia.html">Bibliologia</a>
+                    <a href="/estudos/teologia/cristologia.html">Cristologia</a>
+                    <a href="/estudos/teologia/soteriologia.html">Soteriologia</a>
+                    <a href="/estudos/teologia/pneumatologia.html">Pneumatologia</a>
+                    <a href="/estudos/teologia/eclesiologia.html">Eclesiologia</a>
+                    <a href="/estudos/teologia/patriarcados.html">Patriarcado</a>
+                    <a href="/estudos/teologia/escolastica.html">Escolástica</a>
+                </div>
+            </div>
+
+            <div class="sala dropdown">
+                <button class="dropdown-toggle">Apologética ▾</button>
+                <div class="dropdown-content">
+                    <a href="#">Defesa da fé</a>
+                    <a href="#">Refutação de seitas</a>
+                    <a href="#">Heresias</a>
+                    <a href="#">Argumentos contrários à Bíblia</a>
+                </div>
+            </div>
+
+            <div class="sala dropdown">
+                <button class="dropdown-toggle">Antropologia ▾</button>
+                <div class="dropdown-content">
+                    <a href="#">Origem da humanidade</a>
+                    <a href="#">Terra jovem</a>
+                    <a href="#">Eva mitocondrial</a>
+                    <a href="#">Natureza do homem</a>
+                </div>
+            </div>
+
+            <div class="sala dropdown">
+                <button class="dropdown-toggle">Escola Biblica Dominical▾</button>
+                <div class="dropdown-content">
+                    <a href="#">1.o Trimestre 2025</a>
+                    <a href="#">2.o Trimestre 2025</a>
+                    <a href="#">3.o Trimestre 2025</a>
+                    <a href="#">4.o Trimestre 2025</a>
+                </div>
+            </div>
+
+        </div>
+    </section>
+</main>
+
+<footer>
+    © 2025 O Teólogo. Todos os direitos reservados. |
+    <a href="/faleconosco.html" style="color:inherit;">Fale Conosco</a>
+</footer>
+
+<script>
+    document.querySelectorAll('.dropdown-toggle').forEach(button => {
+        button.addEventListener('click', () => {
+            const parent = button.closest('.dropdown');
+            parent.classList.toggle('open');
+        });
+    });
+</script>
+<script>
+    const apelido = localStorage.getItem('apelido');
+    if (apelido) document.getElementById('apelido').textContent = apelido;
+</script>
+
+</body>
+</html>
