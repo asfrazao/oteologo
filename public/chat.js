@@ -4,19 +4,24 @@ const params = new URLSearchParams(window.location.search);
 const sala = params.get("sala") || "Geral";
 const usuario = params.get("usuario") || "Anônimo";
 
+localStorage.setItem("apelido", usuario);
 document.getElementById("sala-titulo").textContent = `Sala: ${sala}`;
 socket.emit("entrar", { sala, usuario });
 
 let usuariosOnline = [];
 
 socket.on("usuariosNaSala", (lista) => {
-  usuariosOnline = lista;
+  usuariosOnline = Array.isArray(lista) ? lista : Object.values(lista);
 });
 
 socket.on("historico", (historico) => {
   for (const data of historico) {
     exibirMensagem(data);
   }
+});
+
+socket.on("mensagem", (data) => {
+  exibirMensagem(data);
 });
 
 document.getElementById("form-msg").addEventListener("submit", (e) => {
@@ -26,90 +31,94 @@ document.getElementById("form-msg").addEventListener("submit", (e) => {
   if (mensagem.length > 0 && mensagem.length <= 256) {
     socket.emit("mensagem", { sala, usuario, mensagem });
     input.value = "";
-    esconderSugestoes();
+    ocultarSugestoes();
   }
 });
-
-socket.on("mensagem", (data) => {
-  exibirMensagem(data);
-});
-
-function destacarMencoes(texto) {
-  return texto.replace(/\b(\w+)\b/g, (match) => {
-    if (usuariosOnline.includes(match)) {
-      return `<span class="mention">${match}</span>`;
-    }
-    return match;
-  });
-}
 
 function exibirMensagem(data) {
+  const chat = document.getElementById("chat-box");
+  if (!chat) return;
+
   const div = document.createElement("div");
-  const mensagemFormatada = destacarMencoes(data.mensagem);
+  div.className = "mensagem";
 
-  if (data.usuario === "Teologando" && /saiu da sala/.test(data.mensagem)) {
-    div.innerHTML = `<em style="color:#a11;"><b>${mensagemFormatada}</b></em>`;
-  } else if (data.usuario === "Teologando" && /entrou na sala/.test(data.mensagem)) {
-    div.innerHTML = `<em style="color:#157;"><b>${mensagemFormatada}</b></em>`;
-  } else {
-    div.innerHTML = `<strong>${data.usuario} disse:</strong> ${mensagemFormatada}`;
-  }
+  const partes = data.mensagem.split(/(\s+)/).map(part => {
+    if (part.startsWith('@')) {
+      const nome = part.slice(1);
+      return `<span class="mention">${nome}</span>`;
+    }
+    return part;
+  });
 
-  document.getElementById("chat-box").appendChild(div);
-  document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
+  div.innerHTML = `<strong>${data.usuario}:</strong> ${partes.join('')}`;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
 }
 
-socket.on("salaCheia", () => {
-  alert("Sala cheia! Escolha outra.");
-  window.location.href = "/salas";
-});
+// 🧠 MENÇÕES COM @
+const inputMensagem = document.getElementById("msg");
+const sugestoesBox = document.getElementById("sugestoes");
 
-// Implementação da saída da sala e volta para a página inicial
-document.getElementById("btn-sair").addEventListener("click", () => {
-  socket.emit("sairSala", { usuario, sala }); // Avisa o servidor que o usuário está saindo da sala
-  window.location.href = "/"; // Redireciona para a página inicial
-});
+inputMensagem.addEventListener("input", () => {
+  const valor = inputMensagem.value;
+  const indexArroba = valor.lastIndexOf("@");
 
-// 🧠 AUTOCOMPLETE @MENÇÕES
-
-const inputMsg = document.getElementById("msg");
-const sugestaoBox = document.createElement("div");
-sugestaoBox.id = "sugestoes";
-sugestaoBox.className = "sugestoes";
-document.body.appendChild(sugestaoBox);
-
-inputMsg.addEventListener("input", () => {
-  const pos = inputMsg.selectionStart;
-  const texto = inputMsg.value.substring(0, pos);
-  const match = texto.match(/@(\w*)$/);
-  if (match) {
-    const termo = match[1].toLowerCase();
-    const resultados = usuariosOnline.filter(u => u.toLowerCase().startsWith(termo));
-    if (resultados.length > 0) {
-      sugestaoBox.innerHTML = "";
-      resultados.forEach(user => {
-        const item = document.createElement("div");
-        item.textContent = user;
-        item.className = "sugestao-item";
-        item.onclick = () => {
-          inputMsg.value = texto.replace(/@(\w*)$/, user + " ") + inputMsg.value.substring(pos);
-          esconderSugestoes();
-          inputMsg.focus();
-        };
-        sugestaoBox.appendChild(item);
-      });
-      const rect = inputMsg.getBoundingClientRect();
-      sugestaoBox.style.top = `${rect.bottom + window.scrollY}px`;
-      sugestaoBox.style.left = `${rect.left + window.scrollX}px`;
-      sugestaoBox.style.display = "block";
+  if (indexArroba !== -1) {
+    const termo = valor.slice(indexArroba + 1).toLowerCase();
+    if (termo.length >= 2) {
+      mostrarSugestoes(termo);
     } else {
-      esconderSugestoes();
+      ocultarSugestoes();
     }
   } else {
-    esconderSugestoes();
+    ocultarSugestoes();
   }
 });
 
-function esconderSugestoes() {
-  sugestaoBox.style.display = "none";
+function mostrarSugestoes(termo) {
+  sugestoesBox.innerHTML = "";
+
+  const resultados = usuariosOnline
+      .filter(u => u.toLowerCase().startsWith(termo))
+      .slice(0, 5); // Limita sugestões
+
+  if (resultados.length === 0) {
+    ocultarSugestoes();
+    return;
+  }
+
+  resultados.forEach(nome => {
+    const item = document.createElement("div");
+    item.className = "sugestao";
+    item.textContent = nome;
+    item.style.cursor = "pointer";
+    item.style.padding = "4px 8px";
+    item.onclick = () => inserirApelido(nome);
+    sugestoesBox.appendChild(item);
+  });
+
+  const coords = inputMensagem.getBoundingClientRect();
+  sugestoesBox.style.left = coords.left + "px";
+  sugestoesBox.style.top = coords.top - 170 + "px";
+  sugestoesBox.style.display = "block";
 }
+
+function ocultarSugestoes() {
+  sugestoesBox.style.display = "none";
+}
+
+function inserirApelido(apelido) {
+  const valorAtual = inputMensagem.value;
+  const indexArroba = valorAtual.lastIndexOf("@");
+  inputMensagem.value = valorAtual.slice(0, indexArroba) + apelido + " ";
+  inputMensagem.focus();
+  ocultarSugestoes();
+}
+
+// Sair da sala
+document.getElementById("btn-sair").addEventListener("click", () => {
+  localStorage.removeItem("apelido");
+  localStorage.removeItem("token");
+  localStorage.removeItem("sala");
+  window.location.href = "/auth.html";
+});

@@ -5,29 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Debate ao Vivo – Participe da Sala de Chat em O Teólogo</title>
 
-
-    <!-- Meta Description para Google -->
+    <!-- Meta Description -->
     <meta name="description" content="Converse ao vivo com outros cristãos em salas temáticas. Participe dos debates bíblicos no chat de O Teólogo e compartilhe fé e conhecimento.">
-
-    <!-- Robôs e indexação -->
     <meta name="robots" content="index, follow">
     <meta name="author" content="O Teólogo">
-
-    <!-- Open Graph (Facebook, LinkedIn) -->
     <meta property="og:title" content="Chat Bíblico Ao Vivo – Participe dos Debates em O Teólogo">
     <meta property="og:description" content="Entre agora em uma sala temática e debata temas cristãos com irmãos da fé. Cresça em comunhão e conhecimento.">
     <meta name="twitter:title" content="Participe do Chat Bíblico em O Teólogo">
     <meta name="twitter:description" content="Salas abertas de debate teológico, comunhão e ensino bíblico. Envolva-se com outros cristãos no chat ao vivo.">
-
-    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="O Teólogo – Estudos e Comunhão Cristã">
-    <meta name="twitter:description" content="Entre para salas de debate, estude a Bíblia e cresça em comunhão.">
     <meta name="twitter:image" content="https://oteologo.com.br/img/logo.png">
-
-    <!-- Favicon -->
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
-
     <link rel="stylesheet" href="styles.css" />
     <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
     <style>
@@ -113,26 +101,15 @@
             margin: 0 2px;
             display: inline-block;
         }
-        .sugestoes {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background-color: white;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 20;
-            width: 250px;
-            margin-top: 0.5rem;
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #003366;
+            color: #fff;
         }
-        .sugestao-item {
-            padding: 8px 12px;
-            cursor: pointer;
-        }
-        .sugestao-item:hover {
-            background-color: #f0f8ff;
+        footer a {
+            color: inherit;
         }
     </style>
 </head>
@@ -146,14 +123,14 @@
     <a href="/criar">Criar Nova Sala</a>
     <a href="/auth">Login/Logout</a>
     <a href="/apoie.html">App Mobile</a>
-    <a href="/estudos/estudos-teologicos.html"> Estudos Teológicos</a>
+    <a href="/estudos/estudos-teologicos.html">Estudos Teológicos</a>
     <span id="userStatus">Logado como: <span id="apelido"></span></span>
 </nav>
 
 <main>
     <h2 id="sala-titulo">Sala:</h2>
     <div id="chat-box"></div>
-
+    <div id="sugestoes" style="display:none; position:absolute; background:#fff; border:1px solid #ccc; border-radius:6px; padding:0.5rem; max-height:160px; overflow-y:auto; z-index:1000;"></div>
     <form id="form-msg">
         <input type="text" id="msg" maxlength="256" placeholder="Digite sua mensagem..." required autocomplete="off" />
         <button type="button" class="emoji-btn" id="emoji-toggle">😊</button>
@@ -162,11 +139,9 @@
         <emoji-picker id="emoji-picker"></emoji-picker>
     </form>
 </main>
-
 <script src="/socket.io/socket.io.js"></script>
 <script src="chat.js"></script>
 <script>
-    // Emoji Picker
     const emojiToggle = document.getElementById('emoji-toggle');
     const emojiPicker = document.getElementById('emoji-picker');
     const msgInput = document.getElementById("msg");
@@ -187,13 +162,11 @@
         }
     });
 </script>
-<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-4TV9KF3766"></script>
 <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-
     gtag('config', 'G-4TV9KF3766');
 </script>
 <footer>
