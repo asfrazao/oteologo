@@ -154,3 +154,4 @@ if (process.env.ENABLE_BOTS === "true") {
   const botPath = path.join(__dirname, "bots", "bots.js");
   const botProcess = spawn(`node "${botPath}"`, { stdio: "inherit", shell: true });
 }
+app.use("/api/bots", require("./routes/bots"));
