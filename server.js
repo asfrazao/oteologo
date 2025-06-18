@@ -57,7 +57,7 @@ io.on('connection', (socket) => {
       socket.emit('historico', historico.slice(-5));
     }
 
-    const msgEntrada = { usuario: 'Teologando', mensagem: `${usuario} entrou na sala.` };
+    const msgEntrada = { usuario: 'O Teólogo disse', mensagem: `${usuario} entrou na sala.` };
     registrarMensagem(sala, msgEntrada);
     io.to(sala).emit('mensagem', msgEntrada);
 
@@ -98,7 +98,7 @@ io.on('connection', (socket) => {
     const infos = usuarioPorSocket[socket.id];
     if (infos) {
       const { usuario, sala } = infos;
-      const msgSaida = { usuario: 'Teologando', mensagem: `${usuario} saiu da sala.` };
+      const msgSaida = { usuario: 'O Teólogo disse', mensagem: `${usuario} saiu da sala.` };
       registrarMensagem(sala, msgSaida);
       socket.to(sala).emit('mensagem', msgSaida);
       console.log(`🚪 ${usuario} saiu da sala ${sala}`);

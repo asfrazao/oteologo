@@ -94,7 +94,7 @@ const FRASES_TEMAS = [
 ];
 
 function gerarNomeUnico(base, indice, sala) {
-    return `🤖 ${base} - ${sala}`;
+    return ` ${base} `;
 }
 
 function enviarMensagens(socket, sala, nomeBot) {
