@@ -12,8 +12,8 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-const historicoPorSala = {}; // { sala: [ { usuario, mensagem }, ... ] }
-const usuarioPorSocket = {}; // { socket.id: { usuario, sala } }
+const historicoPorSala = {};
+const usuarioPorSocket = {};
 
 console.log('[SERVER] Iniciando aplicação...');
 
@@ -29,11 +29,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 🌐 Rotas da API
+// Rotas da API
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/salas', require('./routes/salas'));
 
-// 📄 Rotas HTML
+// Rotas HTML
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public/index.html')));
 app.get('/auth', (req, res) => res.sendFile(path.join(__dirname, 'public/auth.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public/auth.html')));
@@ -43,9 +43,10 @@ app.get('/salas', (req, res) => res.sendFile(path.join(__dirname, 'public/salas.
 app.get('/criar', (req, res) => res.sendFile(path.join(__dirname, 'public/criar.html')));
 app.get('/chat', (req, res) => res.sendFile(path.join(__dirname, 'public/chat.html')));
 
-// 💬 Socket.IO
+// Socket.IO
 io.on('connection', (socket) => {
-  console.log('🟢 [SOCKET] Novo usuário conectado');
+  // 🔄 Emite o mapa de usuários por sala imediatamente ao conectar
+  socket.emit("usuariosNaSala", gerarMapaDeSalas());
 
   socket.on('entrar', ({ sala, usuario }) => {
     socket.join(sala);
@@ -60,13 +61,8 @@ io.on('connection', (socket) => {
     registrarMensagem(sala, msgEntrada);
     io.to(sala).emit('mensagem', msgEntrada);
 
-    console.log(`👤 [SOCKET] ${usuario} entrou na sala ${sala}`);
-
-    // ✅ Emitir lista atualizada de usuários na sala
-    const usuariosNaSala = Object.values(usuarioPorSocket)
-        .filter(u => u.sala === sala)
-        .map(u => u.usuario);
-    io.to(sala).emit('usuariosNaSala', usuariosNaSala);
+    console.log(`👤 ${usuario} entrou na sala ${sala}`);
+    emitirTodosUsuariosPorSala();
   });
 
   socket.on('mensagem', (data) => {
@@ -81,10 +77,8 @@ io.on('connection', (socket) => {
         return;
       }
 
-      let processedMessage = mensagem;
-
-      if (isHighlyOffensive(mensagem)) {
-        console.warn(`🚨 [MODERAÇÃO] Mensagem ofensiva de ${usuario}: "${mensagem}"`);
+      let texto = filterContent(mensagem);
+      if (isHighlyOffensive(texto)) {
         io.to(sala).emit('mensagem', {
           usuario: 'Sistema',
           mensagem: `A mensagem de ${usuario} foi considerada ofensiva e não será exibida.`
@@ -92,15 +86,11 @@ io.on('connection', (socket) => {
         return;
       }
 
-      processedMessage = filterContent(mensagem);
-      const textoFinal = processedMessage.slice(0, 256);
-      const msgObj = { usuario, mensagem: textoFinal };
-
+      texto = texto.slice(0, 256);
+      const msgObj = { usuario, mensagem: texto };
       registrarMensagem(sala, msgObj);
       io.to(sala).emit('mensagem', msgObj);
-      console.log(`💬 [CHAT] ${usuario} em ${sala}: "${msgObj.mensagem}"`);
-    } else {
-      console.warn(`⚠️ [CHAT] Dados incompletos. Sala: ${sala}, Usuário: ${usuario}, Mensagem: ${mensagem}`);
+      console.log(`💬 ${usuario} em ${sala}: "${texto}"`);
     }
   });
 
@@ -108,29 +98,17 @@ io.on('connection', (socket) => {
     const infos = usuarioPorSocket[socket.id];
     if (infos) {
       const { usuario, sala } = infos;
-
       const msgSaida = { usuario: 'Teologando', mensagem: `${usuario} saiu da sala.` };
       registrarMensagem(sala, msgSaida);
       socket.to(sala).emit('mensagem', msgSaida);
-      console.log(`🚪 [SOCKET] ${usuario} saiu da sala ${sala}`);
-
-      // ✅ Emitir lista atualizada após saída
-      const usuariosRestantes = Object.values(usuarioPorSocket)
-          .filter(u => u.sala === sala && u.usuario !== usuario)
-          .map(u => u.usuario);
-      io.to(sala).emit("usuariosNaSala", usuariosRestantes);
-    } else {
-      const salas = [...socket.rooms].slice(1);
-      salas.forEach(sala => {
-        socket.to(sala).emit('mensagem', { usuario: 'Teologando', mensagem: 'Um usuário saiu da sala.' });
-      });
-      console.log('🚪 [SOCKET] Um usuário desconectou (sem identificação).');
+      console.log(`🚪 ${usuario} saiu da sala ${sala}`);
     }
   });
 
   socket.on('disconnect', () => {
     delete usuarioPorSocket[socket.id];
-    console.log('🔴 [SOCKET] Usuário desconectado');
+    emitirTodosUsuariosPorSala();
+    console.log('🔴 Usuário desconectado');
   });
 });
 
@@ -142,15 +120,37 @@ function registrarMensagem(sala, msgObj) {
   }
 }
 
+function emitirTodosUsuariosPorSala() {
+  io.emit("usuariosNaSala", gerarMapaDeSalas());
+}
+
+function gerarMapaDeSalas() {
+  const mapa = {};
+  for (const { usuario, sala } of Object.values(usuarioPorSocket)) {
+    if (!mapa[sala]) mapa[sala] = [];
+    mapa[sala].push(usuario);
+  }
+  return mapa;
+}
+
+// Inicialização do servidor
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });
 
+// Tratamento de erros
 process.on('uncaughtException', (err) => {
-  console.error('❌ [UNCAUGHT EXCEPTION] Erro inesperado:', err);
+  console.error('❌ Erro não tratado:', err);
   process.exit(1);
 });
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('❗ [UNHANDLED REJECTION] Promessa rejeitada:', reason);
+process.on('unhandledRejection', (reason) => {
+  console.error('❗ Promessa rejeitada:', reason);
 });
+
+// Bots (se habilitado no .env)
+if (process.env.ENABLE_BOTS === "true") {
+  const { spawn } = require("child_process");
+  const botPath = path.join(__dirname, "bots", "bots.js");
+  const botProcess = spawn(`node "${botPath}"`, { stdio: "inherit", shell: true });
+}
