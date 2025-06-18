@@ -3,6 +3,8 @@ const express = require("express");
 const router = express.Router();
 const { iniciarBots, pararBots, botsAtivos } = require("../botManager");
 
+let currentBotConfig = process.env.NUMBER_BOTS || "2";
+
 // Proteção opcional por token (BOTS_ADMIN_TOKEN no .env)
 router.use((req, res, next) => {
     const auth = req.headers.authorization;
@@ -30,7 +32,17 @@ router.post("/desativar", (req, res) => {
 });
 
 router.get("/status", (req, res) => {
-    res.json({ ativo: botsAtivos() });
+    res.json({ ativo: botsAtivos(), configuracaoAtual: currentBotConfig });
+});
+
+router.post("/configurar", (req, res) => {
+    const novaConfig = req.body.valores;
+    if (!novaConfig || typeof novaConfig !== "string" || !/^\d+(,\d+)*$/.test(novaConfig)) {
+        return res.status(400).json({ msg: "Formato inválido. Use algo como '2,3,4'" });
+    }
+    currentBotConfig = novaConfig;
+    process.env.NUMBER_BOTS = novaConfig; // Atualiza para o processo atual
+    res.json({ msg: "NUMBER_BOTS atualizado", valores: novaConfig });
 });
 
 module.exports = router;

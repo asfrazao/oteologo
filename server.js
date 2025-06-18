@@ -155,3 +155,34 @@ if (process.env.ENABLE_BOTS === "true") {
   const botProcess = spawn(`node "${botPath}"`, { stdio: "inherit", shell: true });
 }
 app.use("/api/bots", require("./routes/bots"));
+
+// Rota de configuração dos bots
+const botsConfig = {
+  intervalMin: parseInt(process.env.BOTS_INTERVAL_RANGE?.split(",")[0]) || 20000,
+  intervalMax: parseInt(process.env.BOTS_INTERVAL_RANGE?.split(",")[1]) || 30000,
+};
+
+app.get('/api/bots/intervalo', (req, res) => {
+  res.json({
+    intervalo: `${botsConfig.intervalMin},${botsConfig.intervalMax}`
+  });
+});
+
+app.post('/api/bots/intervalo', (req, res) => {
+  const auth = req.headers.authorization || "";
+  if (!auth.includes("supertoken123")) {
+    return res.status(401).json({ msg: "Não autorizado" });
+  }
+
+  const { intervalo } = req.body;
+  const [minStr, maxStr] = intervalo?.split(",") || [];
+  const min = parseInt(minStr);
+  const max = parseInt(maxStr);
+  if (isNaN(min) || isNaN(max) || min < 5000 || max < min) {
+    return res.status(400).json({ msg: "Intervalo inválido" });
+  }
+
+  botsConfig.intervalMin = min;
+  botsConfig.intervalMax = max;
+  res.json({ msg: "Intervalo atualizado com sucesso", intervalo: `${min},${max}` });
+});

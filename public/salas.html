@@ -4,88 +4,74 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Salas - O Teólogo</title>
-  <meta name="description" content="Explore as salas de debate disponíveis em O Teólogo. Junte-se a discussões sobre Escatologia, Trindade, Cristologia e muitos outros temas teológicos.">
   <link rel="stylesheet" href="styles.css?v=1" />
   <style>
-    /* Estilos específicos para esta página, para complementar o styles.css */
-    /* Estes estilos farão com que o 'main' atue como o grande 'card' central */
     main {
-      max-width: 540px; /* Largura para o cartão central, como no cadastro.html */
-      margin: 3rem auto; /* Centraliza o cartão e dá espaçamento superior */
-      padding: 2rem 1.5rem; /* Preenchimento interno do cartão */
-      background: #fff; /* Fundo branco para o cartão */
-      border-radius: 14px; /* Bordas arredondadas */
-      box-shadow: 0 4px 24px rgba(0,0,0,0.09); /* Sombra para o efeito de elevação */
-      text-align: center; /* Centraliza o texto e elementos dentro deste main */
+      max-width: 540px;
+      margin: 3rem auto;
+      padding: 2rem 1.5rem;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.09);
+      text-align: center;
     }
 
-    /* Ajustes para elementos dentro do main/card */
-    main h2 {
+    h2 {
       font-size: 1.75rem;
-      margin-bottom: 2.5rem; /* Mais espaço abaixo do título principal */
-      color: #222; /* Cor mais escura, como na imagem */
-      border-bottom: none; /* Remove a linha azul de h2 que é comum em seções */
-      padding-bottom: 0;
+      margin-bottom: 2.5rem;
+      color: #222;
     }
 
-    /* Estilo para os blocos de seleção de sala (substituindo .card e .sala) */
     .sala-bloco {
-      margin-bottom: 2rem; /* Espaçamento entre os blocos de seleção */
-      padding: 0.5rem 0; /* Ajuste de padding para não criar borda dupla se fosse .sala */
-      text-align: center; /* Garante que o conteúdo de cada bloco esteja centralizado */
+      margin-bottom: 2rem;
+      padding: 0.5rem 0;
+      text-align: center;
     }
 
-    .sala-bloco h3 { /* Para os títulos como "Salas Disponíveis:" e "Salas Criadas por Usuários:" */
+    .sala-bloco h3 {
       font-size: 1.05rem;
       font-weight: bold;
-      color: #003366; /* Cor azul do tema */
-      margin-top: 0;
-      margin-bottom: 0.75rem; /* Espaço abaixo do subtítulo */
+      color: #003366;
+      margin: 0 0 0.75rem 0;
     }
 
     .sala-bloco select {
-      padding: 0.5rem; /* Ajusta o padding para ser igual aos inputs do styles.css */
-      font-size: 1rem; /* Ajusta o tamanho da fonte */
-      border-radius: 6px; /* Bordas arredondadas */
-      border: 1px solid #ccc; /* Borda padrão */
-      width: 90%; /* Ocupa 90% da largura do contêiner */
-      max-width: 420px; /* Limita a largura máxima */
-      margin-bottom: 1rem; /* Espaço abaixo do select */
-      box-sizing: border-box; /* Inclui padding e border na largura */
-      display: block; /* Para que margin: auto funcione */
-      margin-left: auto; /* Centraliza o select */
-      margin-right: auto; /* Centraliza o select */
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      width: 90%;
+      max-width: 420px;
+      margin: 0 auto 1rem auto;
+      display: block;
+      box-sizing: border-box;
     }
 
     .sala-bloco button {
-      padding: 0.45rem 1.4rem; /* Ajusta o padding para ser mais enxuto, como na imagem */
-      font-size: 1rem; /* Ajusta o tamanho da fonte */
+      padding: 0.45rem 1.4rem;
+      font-size: 1rem;
       font-weight: bold;
       border-radius: 6px;
       border: none;
       cursor: pointer;
-      margin: 0.2rem 0.4rem; /* Espaçamento entre botões */
-      transition: all 0.3s ease; /* Transição suave no hover */
+      margin: 0.2rem 0.4rem;
     }
 
-    /* Mantém os estilos de cores dos botões do styles.css */
     .btn {
       background-color: #007bff;
       color: white;
     }
+
     .btn:hover {
       background-color: #0056b3;
     }
+
     .btn.green {
       background-color: #28a745;
     }
+
     .btn.green:hover {
       background-color: #1e7e34;
-    }
-
-    /* Remover a seção 'hero' que foi adicionada antes, pois o novo main é o 'hero' aqui */
-    .hero { /* Apenas para garantir que o hero específico da página de salas não interfira */
-      display: none;
     }
   </style>
 </head>
@@ -112,8 +98,7 @@
 
   <div class="sala-bloco">
     <h3>Salas Disponíveis:</h3>
-    <select id="selectSalasFixas">
-    </select><br />
+    <select id="selectSalasFixas"></select><br />
     <button class="btn" onclick="entrarSalaSelecionada('fixa')">Entrar</button>
   </div>
 
@@ -177,7 +162,6 @@
         }
       }
     } catch (err) {
-      console.error("Erro ao buscar salas de usuários:", err);
       const option = document.createElement('option');
       option.disabled = true; option.selected = true;
       option.textContent = "Erro ao buscar salas de usuários.";
@@ -189,10 +173,11 @@
     const select = tipo === 'fixa' ? document.getElementById('selectSalasFixas') : document.getElementById('selectSalasUsuario');
     const nomeSala = select.value;
     if (!nomeSala || !token || !apelido) {
-      alert("Você precisa estar logado para entrar em uma sala. Por favor, faça login.");
+      alert("Você precisa estar logado para entrar em uma sala.");
       window.location.href = '/auth.html';
       return;
     }
+
     const apiUrl = tipo === 'usuario'
             ? `/api/salas/usuario/${encodeURIComponent(nomeSala)}/entrar`
             : `/api/salas/${encodeURIComponent(nomeSala)}/entrar`;
@@ -200,9 +185,20 @@
     try {
       const res = await fetch(apiUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({})
       });
+
+      if (res.status === 401) {
+        alert('Você ficou muito tempo sem atividade, logue-se novamente!');
+        localStorage.removeItem('token');
+        localStorage.removeItem('apelido');
+        window.location.href = '/auth.html';
+        return;
+      }
 
       if (res.ok) {
         localStorage.setItem('sala', nomeSala);
@@ -213,7 +209,7 @@
       }
     } catch (err) {
       console.error('Erro na requisição para entrar na sala:', err);
-      alert('Ocorreu um erro ao tentar entrar na sala. Tente novamente.');
+      alert('Erro de rede ao tentar entrar na sala. Tente novamente.');
     }
   }
 
@@ -228,14 +224,6 @@
       document.getElementById('userStatus').textContent = 'Não Logado';
     }
   });
-</script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-4TV9KF3766"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-4TV9KF3766');
 </script>
 </body>
 </html>

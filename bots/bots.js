@@ -7,12 +7,19 @@ const SALAS_FIXAS = [
     'Presbiterianos','Batistas','Testemunhas da Jeova','Mórmons'
 ];
 
-// Novo formato: NUMBER_BOTS=1,2,3
+// Leitura das variáveis de ambiente
 const POSSIVEIS_NUM_BOTS = (process.env.NUMBER_BOTS || "0")
     .split(",")
     .map(n => parseInt(n.trim()))
     .filter(n => !isNaN(n) && n >= 0);
 
+const INTERVAL_RANGE = (process.env.BOTS_INTERVAL_RANGE || "20000,30000")
+    .split(",")
+    .map(n => parseInt(n.trim()));
+const MIN_INTERVAL = INTERVAL_RANGE[0] || 20000;
+const MAX_INTERVAL = INTERVAL_RANGE[1] || 30000;
+
+// Verificação básica
 if (POSSIVEIS_NUM_BOTS.length === 0) {
     console.log("[BOTS] Nenhum valor válido encontrado em NUMBER_BOTS");
     process.exit(0);
@@ -33,7 +40,57 @@ const FRASES_TEMAS = [
     "O Espírito Santo nos guia em toda verdade.",
     "A Palavra é viva e eficaz!",
     "Evangelizar é um chamado de todos nós.",
-    "Cristo em vós, a esperança da glória."
+    "Cristo em vós, a esperança da glória.",
+    "Quem sabe argumentar, somente com a biblia?",
+    "Estou gostando de debater esses assuntos",
+    "Vi que na sessão de estudos teologicos do site tem muito material legal, também!!",
+    "Ajudei a iniciativa com R$ 10,00 e ganhei um livro da hora!!",
+    "Gostei demais da iniciativa, ajudei com R$ 5,00, nem pesa no bolso",
+    "Já mandei umas sugestões de melhoria no fale conosco deles",
+    "O importante é glorificar a Deus com entendimento.",
+    "Essa é uma das doutrinas mais debatidas, né?",
+    "Cada versículo revela um pouco mais da verdade.",
+    "A Bíblia é nossa única regra de fé e prática.",
+    "Deus abençoe todos os irmãos dessa sala!",
+    "Já oraram hoje? Oração move o coração de Deus.",
+    "Muitos são chamados, poucos escolhidos!",
+    "Que possamos crescer em graça e conhecimento.",
+    "Jesus está voltando! Estamos preparados?",
+    "Estou anotando várias referências aqui!",
+    "Glória a Deus por esse projeto maravilhoso!",
+    "Esse tema me fez refletir muito.",
+    "O debate é saudável quando há respeito.",
+    "Edificação mútua é o objetivo dessa sala.",
+    "Compartilhar conhecimento fortalece nossa fé.",
+    "Cada doutrina deve ser testada à luz da Palavra.",
+    "A humildade é essencial em qualquer debate.",
+    "Deus nos dá sabedoria para entender sua vontade.",
+    "Aprender juntos nos aproxima do propósito divino.",
+    "Discernir é um dom que devemos cultivar com oração.",
+    "A verdade liberta, mas também une.",
+    "Debater com amor edifica a todos.",
+    "A comunhão entre irmãos é uma benção preciosa.",
+    "Respeitar opiniões diferentes é sinal de maturidade cristã.",
+    "A Palavra de Deus é fonte inesgotável de aprendizado.",
+    "Quando dois ou três se reúnem em Seu nome, Ele está presente.",
+    "Dúvidas são portas para o crescimento espiritual.",
+    "Mais importante que vencer o debate é viver a verdade.",
+    "A Bíblia deve ser nosso guia em toda discussão.",
+    "Cristãos maduros sabem ouvir antes de falar.",
+    "O Espírito Santo nos ensina mesmo através de outros irmãos.",
+    "A sabedoria do alto é pacífica e cheia de misericórdia.",
+    "Quem busca a verdade encontra a paz.",
+    "Não existe edificação sem amor ao próximo.",
+    "A luz da Escritura revela os caminhos do Senhor.",
+    "O evangelho é simples, mas profundo.",
+    "Unidade não significa uniformidade.",
+    "A diversidade de dons enriquece o Corpo de Cristo.",
+    "A verdade sempre prevalece no tempo certo.",
+    "Cada encontro é uma oportunidade divina de crescimento.",
+    "Debater com mansidão atrai mais corações.",
+    "Toda palavra deve ser temperada com graça.",
+    "A glória é de Deus, mesmo nos nossos argumentos.",
+    "Jesus é o caminho, e toda discussão deve levar a Ele."
 ];
 
 function gerarNomeUnico(base, indice, sala) {
@@ -41,14 +98,19 @@ function gerarNomeUnico(base, indice, sala) {
 }
 
 function enviarMensagens(socket, sala, nomeBot) {
-    setInterval(() => {
-        const frase = FRASES_TEMAS[Math.floor(Math.random() * FRASES_TEMAS.length)];
-        socket.emit("mensagem", {
-            sala,
-            usuario: nomeBot,
-            mensagem: frase
-        });
-    }, 20000 + Math.floor(Math.random() * 10000)); // entre 20 e 30s
+    function enviar() {
+        const intervalo = MIN_INTERVAL + Math.floor(Math.random() * (MAX_INTERVAL - MIN_INTERVAL));
+        setTimeout(() => {
+            const frase = FRASES_TEMAS[Math.floor(Math.random() * FRASES_TEMAS.length)];
+            socket.emit("mensagem", {
+                sala,
+                usuario: nomeBot,
+                mensagem: frase
+            });
+            enviar(); // Recursivamente agenda a próxima
+        }, intervalo);
+    }
+    enviar();
 }
 
 function iniciarBot(nomeBot, sala) {
@@ -73,7 +135,7 @@ function iniciarBot(nomeBot, sala) {
     });
 }
 
-// Cria bots aleatórios por sala com base nos valores possíveis
+// Inicializa os bots em cada sala fixa com quantidade aleatória
 for (const sala of SALAS_FIXAS) {
     const qtdBots = POSSIVEIS_NUM_BOTS[Math.floor(Math.random() * POSSIVEIS_NUM_BOTS.length)];
     for (let i = 0; i < qtdBots; i++) {
