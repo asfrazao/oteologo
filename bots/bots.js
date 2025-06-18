@@ -93,8 +93,9 @@ const FRASES_TEMAS = [
     "Jesus é o caminho, e toda discussão deve levar a Ele."
 ];
 
+//adicionar icones nos bots
 function gerarNomeUnico(base, indice, sala) {
-    return ` ${base} `;
+    return `* ${base} `;
 }
 
 function enviarMensagens(socket, sala, nomeBot) {
