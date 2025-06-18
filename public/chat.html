@@ -130,7 +130,7 @@
 <main>
     <h2 id="sala-titulo">Sala:</h2>
     <div id="chat-box"></div>
-    <div id="sugestoes" style="display:none; position:absolute; background:#fff; border:1px solid #ccc; border-radius:6px; padding:0.5rem; max-height:160px; overflow-y:auto; z-index:1000;"></div>
+    <div id="sugestoes"></div>
     <form id="form-msg">
         <input type="text" id="msg" maxlength="256" placeholder="Digite sua mensagem..." required autocomplete="off" />
         <button type="button" class="emoji-btn" id="emoji-toggle">😊</button>
@@ -138,6 +138,7 @@
         <button class="btn" type="button" id="btn-sair">Sair</button>
         <emoji-picker id="emoji-picker"></emoji-picker>
     </form>
+
 </main>
 <script src="/socket.io/socket.io.js"></script>
 <script src="chat.js"></script>

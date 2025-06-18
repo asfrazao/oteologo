@@ -87,12 +87,20 @@ io.on('connection', (socket) => {
       }
 
       texto = texto.slice(0, 256);
+
+      // 🔍 Verifica se há @menção
+      const match = texto.match(/@(\w{2,})/);
+      const destinatario = match ? match[1] : null;
+
       const msgObj = { usuario, mensagem: texto };
+      if (destinatario) msgObj.destinatario = destinatario;
+
       registrarMensagem(sala, msgObj);
       io.to(sala).emit('mensagem', msgObj);
       console.log(`💬 ${usuario} em ${sala}: "${texto}"`);
     }
   });
+
 
   socket.on('disconnecting', () => {
     const infos = usuarioPorSocket[socket.id];
