@@ -291,6 +291,10 @@
             }
         }
         localStorage.clear();
+        // Adicione esta linha para instruir o Google a desabilitar a seleção automática
+        if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+            google.accounts.id.disableAutoSelect();
+        }
         document.getElementById('status-msg').textContent = 'Logout realizado!';
         setTimeout(() => window.location.href = '/auth', 900);
     });
