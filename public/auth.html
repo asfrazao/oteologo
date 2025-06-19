@@ -165,6 +165,7 @@
          data-ux_mode="popup"
          data-auto_prompt="false"
          data-auto_select="false"
+         data-prompt="select_account"
          data-itp_support="true"
          data-callback="handleCredentialResponse">
     </div>
@@ -277,24 +278,28 @@
         const refreshToken = localStorage.getItem('refreshToken');
         if (refreshToken) {
             try {
-                const res = await fetch('/api/auth/logout', {
+                await fetch('/api/auth/logout', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ refreshToken })
                 });
-                const data = await res.json();
-                if (!res.ok) {
-                    console.warn('Erro ao fazer logout:', data.msg || 'Erro desconhecido.');
-                }
             } catch (err) {
-                console.error('Erro na requisição de logout:', err);
+                console.error('Erro no logout:', err);
             }
         }
+
+        // Limpeza completa
         localStorage.clear();
-        // Adicione esta linha para instruir o Google a desabilitar a seleção automática
+        sessionStorage.clear();
+
+        // Forçar logout do Google
         if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
             google.accounts.id.disableAutoSelect();
+            google.accounts.id.revoke(localStorage.getItem('email'), done => {
+                console.log('Revogação do Google concluída');
+            });
         }
+
         document.getElementById('status-msg').textContent = 'Logout realizado!';
         setTimeout(() => window.location.href = '/auth', 900);
     });
