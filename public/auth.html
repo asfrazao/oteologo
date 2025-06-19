@@ -154,24 +154,25 @@
 
     <button class="btn-cadastrar" id="cadastrar-btn" type="button">Cadastrar</button>
 
+    <!-- Carrega a biblioteca do Google -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 
+    <!-- Configuração do carregamento -->
     <div id="g_id_onload"
          data-client_id="645041222379-4pg8oiqrbn0onivgtfg194pjvgfuki88.apps.googleusercontent.com"
          data-callback="handleCredentialResponse"
-         data-auto_prompt="false">
+         data-context="signin">
     </div>
 
+    <!-- Botão de login do Google -->
     <div class="g_id_signin"
-         data-client_id="645041222379-4pg8oiqrbn0onivgtfg194pjvgfuki88.apps.googleusercontent.com"
          data-type="standard"
          data-size="large"
          data-theme="outline"
-         data-text="sign_in_with"
+         data-text="signin_with"
          data-shape="rectangular"
          data-logo_alignment="left"
-         data-auto_select="false"
-         data-context="use">
+         data-context="signin">
     </div>
 
 
