@@ -5,35 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Login e Cadastro - Plataforma Cristã O Teólogo</title>
 
-
-    <!-- Meta Description para Google -->
-    <!-- ✅ Meta Description -->
     <meta name="description" content="Acesse sua conta ou cadastre-se gratuitamente na plataforma cristã O Teólogo. Participe de salas de debate bíblico, estude teologia e cresça espiritualmente.">
-
-    <!-- ✅ Meta Keywords -->
     <meta name="keywords" content="Login, Cadastro, O Teólogo, Acesso, Plataforma Cristã, Debates Bíblicos, Estudo Bíblico, Comunhão Cristã, Estudos Teológicos">
-
-    <!-- ✅ Author e Robots -->
     <meta name="author" content="O Teólogo">
     <meta name="robots" content="index, follow">
-
-    <!-- ✅ Open Graph -->
     <meta property="og:title" content="Acesse ou Cadastre-se - O Teólogo">
     <meta property="og:description" content="Entre para a comunidade O Teólogo e participe de estudos bíblicos, debates e edificação cristã. Login ou cadastro gratuitos.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://oteologo.com.br/auth">
     <meta property="og:image" content="https://oteologo.com.br/img/logo.png">
-
-    <!-- ✅ Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Login - O Teólogo">
     <meta name="twitter:description" content="Participe de debates bíblicos online. Acesse ou crie sua conta na plataforma cristã O Teólogo.">
     <meta name="twitter:image" content="https://oteologo.com.br/img/logo.png">
-
-    <!-- ✅ Canonical -->
     <link rel="canonical" href="https://oteologo.com.br/auth" />
-
-    <!-- ✅ Favicon e CSS -->
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="styles.css" />
 
@@ -133,7 +118,7 @@
     <a href="/criar">Criar Nova Sala</a>
     <a href="/auth">Login/Logout</a>
     <a href="/apoie.html">App Mobile</a>
-    <a href="/estudos/estudos-teologicos.html"> Estudos Teológicos</a>
+    <a href="/estudos/estudos-teologicos.html">Estudos Teológicos</a>
     <span id="userStatus">Logado como: <span id="apelido"></span></span>
 </nav>
 
@@ -151,26 +136,24 @@
         <button type="button" class="btn-logout" id="logout-btn">Sair</button>
     </div>
 
-
     <button class="btn-cadastrar" id="cadastrar-btn" type="button">Cadastrar</button>
 
-    <!-- SDK do Google Identity -->
+    <!-- Google Login SDK -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-    <!-- Configuração do botão Google -->
     <div id="g_id_onload"
          data-client_id="645041222379-4pg8oiqrbn0onivgtfg194pjvgfuki88.apps.googleusercontent.com"
          data-login_uri="https://oteologo.com.br/api/google-login"
-         data-context="use"
+         data-context="signin"
          data-ux_mode="popup"
          data-auto_prompt="false"
          data-auto_select="false"
-         data-prompt="select_account"
-         data-itp_support="true"
+         data-prompt_parent_id="g_id_signin"
          data-callback="handleCredentialResponse">
     </div>
 
     <div class="g_id_signin"
+         id="g_id_signin"
          data-type="standard"
          data-shape="rect"
          data-theme="outline"
@@ -178,34 +161,6 @@
          data-size="large"
          data-logo_alignment="left">
     </div>
-
-
-    <script>
-        function handleCredentialResponse(response) {
-            const userData = parseJwt(response.credential);
-            fetch('/api/google-login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(userData)
-            }).then(res => res.json())
-                .then(data => {
-                    if (data.token) {
-                        localStorage.setItem("token", data.token);
-                        localStorage.setItem("apelido", userData.name);
-                        localStorage.setItem("avatar", userData.picture);
-                        window.location.href = "/salas.html";
-                    }
-                });
-        }
-
-        function parseJwt(token) {
-            const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-            const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
-                '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-            ).join(''));
-            return JSON.parse(jsonPayload);
-        }
-    </script>
 
     <div class="status" id="status-msg"></div>
 </main>
@@ -216,6 +171,37 @@
 </footer>
 
 <script>
+    function handleCredentialResponse(response) {
+        const userData = parseJwt(response.credential);
+        fetch('/api/google-login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData)
+        }).then(res => res.json())
+            .then(data => {
+                if (data.token) {
+                    localStorage.setItem("token", data.token);
+                    localStorage.setItem("apelido", userData.name);
+                    localStorage.setItem("avatar", userData.picture);
+                    window.location.href = "/salas.html";
+                }
+            });
+    }
+
+    function parseJwt(token) {
+        const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+            '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+        ).join(''));
+        return JSON.parse(jsonPayload);
+    }
+
+    window.onload = function () {
+        if (window.google && google.accounts && google.accounts.id) {
+            google.accounts.id.disableAutoSelect();
+        }
+    }
+
     async function realizarLogin() {
         const apelido = document.getElementById('login-apelido').value;
         const senha = document.getElementById('login-senha').value;
@@ -284,22 +270,13 @@
                     body: JSON.stringify({ refreshToken })
                 });
             } catch (err) {
-                console.error('Erro no logout:', err);
+                console.error('Erro na requisição de logout:', err);
             }
         }
-
-        // Limpeza completa
         localStorage.clear();
-        sessionStorage.clear();
-
-        // Forçar logout do Google
         if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
             google.accounts.id.disableAutoSelect();
-            google.accounts.id.revoke(localStorage.getItem('email'), done => {
-                console.log('Revogação do Google concluída');
-            });
         }
-
         document.getElementById('status-msg').textContent = 'Logout realizado!';
         setTimeout(() => window.location.href = '/auth', 900);
     });
@@ -317,28 +294,25 @@
     }
 
     const token = localStorage.getItem('token');
-    const entrarBtn = document.getElementById('entrar-btn');
-    const logoutBtn = document.getElementById('logout-btn');
-    const cadastrarBtn = document.getElementById('cadastrar-btn');
     if (token && apelido) {
         document.getElementById('login-apelido').style.display = 'none';
         document.getElementById('login-senha').parentElement.style.display = 'none';
-        entrarBtn.style.display = 'none';
-        cadastrarBtn.style.display = 'none';
-        logoutBtn.style.display = 'inline-block';
+        document.getElementById('entrar-btn').style.display = 'none';
+        document.getElementById('cadastrar-btn').style.display = 'none';
+        document.getElementById('logout-btn').style.display = 'inline-block';
         document.getElementById('status-msg').textContent = `Logado como: ${apelido}`;
     } else {
-        logoutBtn.style.display = 'none';
+        document.getElementById('logout-btn').style.display = 'none';
         document.getElementById('status-msg').textContent = 'Faça login ou cadastre-se.';
     }
 </script>
-<!-- Google tag (gtag.js) -->
+
+<!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-4TV9KF3766"></script>
 <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-
     gtag('config', 'G-4TV9KF3766');
 </script>
 
