@@ -154,25 +154,27 @@
 
     <button class="btn-cadastrar" id="cadastrar-btn" type="button">Cadastrar</button>
 
-    <!-- Carrega a biblioteca do Google -->
+    <!-- Google Sign-In SDK -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-    <!-- Configuração do carregamento -->
+    <!-- Inicialização sem dados pessoais -->
     <div id="g_id_onload"
          data-client_id="645041222379-4pg8oiqrbn0onivgtfg194pjvgfuki88.apps.googleusercontent.com"
+         data-context="signup"
          data-callback="handleCredentialResponse"
-         data-context="signin">
+         data-ux_mode="popup"
+         data-auto_prompt="false">
     </div>
 
-    <!-- Botão de login do Google -->
+    <!-- Botão do Google SEM NOME/EMAIL -->
     <div class="g_id_signin"
          data-type="standard"
          data-size="large"
          data-theme="outline"
-         data-text="signin_with"
+         data-text="sign_in_with"
          data-shape="rectangular"
          data-logo_alignment="left"
-         data-context="signin">
+         data-context="signup">
     </div>
 
 
