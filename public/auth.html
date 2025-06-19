@@ -150,7 +150,54 @@
         <button class="btn" id="entrar-btn">Entrar</button>
         <button type="button" class="btn-logout" id="logout-btn">Sair</button>
     </div>
+
+
     <button class="btn-cadastrar" id="cadastrar-btn" type="button">Cadastrar</button>
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <div id="g_id_onload"
+         data-client_id="645041222379-4pg8oiqrbn0onivgtfg194pjvgfuki88.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false">
+    </div>
+
+    <div class="g_id_signin"
+         data-type="standard"
+         data-size="large"
+         data-theme="outline"
+         data-text="sign_in_with"
+         data-shape="rect"
+         data-logo_alignment="left">
+    </div>
+
+    <script>
+        function handleCredentialResponse(response) {
+            const userData = parseJwt(response.credential);
+            fetch('/api/google-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData)
+            }).then(res => res.json())
+                .then(data => {
+                    if (data.token) {
+                        localStorage.setItem("token", data.token);
+                        localStorage.setItem("apelido", userData.name);
+                        localStorage.setItem("avatar", userData.picture);
+                        window.location.href = "/salas.html";
+                    }
+                });
+        }
+
+        function parseJwt(token) {
+            const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+                '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+            ).join(''));
+            return JSON.parse(jsonPayload);
+        }
+    </script>
+
     <div class="status" id="status-msg"></div>
 </main>
 

@@ -133,14 +133,18 @@ exports.cadastrar = async (req, res) => {
 // LOGIN — retorna access e refresh tokens
 exports.login = async (req, res) => {
   console.log("🔑 [AUTH] Recebida requisição de login. Payload:", { login: req.body.login });
+
   try {
     const { login, senha } = req.body;
+
     // Busca usuário pelo login (salvo em minúsculas)
     const usuario = await Usuario.findOne({ login: login.toLowerCase() });
+
     if (!usuario) {
       console.warn('⚠️ [AUTH] Tentativa de login: Usuário não encontrado.');
       return res.status(400).json({ msg: 'Usuário não encontrado.' });
     }
+
     const senhaConfere = await bcrypt.compare(senha, usuario.senha);
     if (!senhaConfere) {
       console.warn('⚠️ [AUTH] Tentativa de login: Senha inválida para usuário', usuario.login);
@@ -151,15 +155,24 @@ exports.login = async (req, res) => {
     const accessToken = gerarAccessToken(usuario);
     const refreshToken = gerarRefreshToken();
 
+    // ✅ Garante que o campo refreshTokens exista
+    if (!Array.isArray(usuario.refreshTokens)) {
+      usuario.refreshTokens = [];
+    }
+
     // Limpa refresh tokens expirados antes de adicionar um novo
     usuario.refreshTokens = usuario.refreshTokens.filter(rt => new Date(rt.expira) > new Date());
+
     // Salva o novo refresh token
     usuario.refreshTokens.push({
       token: refreshToken,
       expira: new Date(Date.now() + REFRESH_TOKEN_EXPIRES_DAYS * 24 * 60 * 60 * 1000)
     });
+
     await usuario.save();
+
     console.log('✅ [AUTH] Login bem-sucedido para usuário:', usuario.login);
+
     res.status(200).json({
       accessToken,
       refreshToken,
@@ -170,11 +183,13 @@ exports.login = async (req, res) => {
         role: usuario.role // Inclui a role no retorno do login
       }
     });
+
   } catch (err) {
     console.error('❌ [AUTH] Erro interno ao logar:', err);
     res.status(500).json({ msg: 'Erro ao logar. Por favor, tente novamente mais tarde.', erro: err.message });
   }
 };
+
 
 // REFRESH TOKEN — renova access token caso refresh válido
 exports.refresh = async (req, res) => {

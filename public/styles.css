@@ -363,3 +363,19 @@ button:hover {
   background-color: #f0f8ff;
   color: #003366;
 }
+
+.g_id_signin {
+  margin-top: 1.2rem;
+  width: 100% !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-right: 6px;
+}

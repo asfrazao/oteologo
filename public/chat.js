@@ -65,10 +65,17 @@ function exibirMensagem(data) {
   });
 
   const icone = isDestinatario ? "🔔 " : "";
-  div.innerHTML = `<strong>${icone}${data.usuario}:</strong> ${partes.join('')}`;
+  const avatar = localStorage.getItem("avatar");
+  const nome = data.usuario;
+  const nomeHTML = avatar
+      ? `<img src="${avatar}" class="avatar"> <span>${nome}</span>`
+      : nome;
+
+  div.innerHTML = `<strong>${icone}${nomeHTML}:</strong> ${partes.join('')}`;
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
 }
+
 
 
 

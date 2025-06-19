@@ -32,6 +32,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Rotas da API
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/salas', require('./routes/salas'));
+app.use('/api/google-login', require('./routes/googleLogin'));
 
 // Rotas HTML
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public/index.html')));
