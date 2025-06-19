@@ -157,16 +157,18 @@
     <!-- Google Sign-In SDK -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-    <!-- Inicialização sem dados pessoais -->
+    <!-- Força contexto de login sem salvar nada -->
     <div id="g_id_onload"
          data-client_id="645041222379-4pg8oiqrbn0onivgtfg194pjvgfuki88.apps.googleusercontent.com"
-         data-context="signup"
-         data-callback="handleCredentialResponse"
+         data-login_uri="https://oteologo.com.br/api/google-login"
+         data-context="signin"
          data-ux_mode="popup"
-         data-auto_prompt="false">
+         data-auto_prompt="false"
+         data-auto_select="false"
+         data-callback="handleCredentialResponse">
     </div>
 
-    <!-- Botão do Google SEM NOME/EMAIL -->
+    <!-- Botão minimalista (sem conta sugerida) -->
     <div class="g_id_signin"
          data-type="standard"
          data-size="large"
@@ -174,8 +176,9 @@
          data-text="sign_in_with"
          data-shape="rectangular"
          data-logo_alignment="left"
-         data-context="signup">
+         data-context="signin">
     </div>
+
 
 
     <script>
