@@ -7,7 +7,7 @@ const usuarioSchema = new mongoose.Schema({
   celular: { type: String },   // ← não obrigatório
   email: { type: String, required: true, unique: true },
   login: { type: String, required: true, unique: true },
-  senha: { type: String },
+  senha: { type: String, required: true },
   avatar: { type: String },
   perfil: { type: String, enum: ['usuario', 'moderador', 'admin'], default: 'usuario' },
   criadoEm: { type: Date, default: Date.now }

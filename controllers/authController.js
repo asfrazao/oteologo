@@ -195,9 +195,9 @@ exports.refresh = async (req, res) => {
       'refreshTokens.token': refreshToken,
       'refreshTokens.expira': { $gt: new Date() }
     });
-    if (!usuario) {
-      console.warn('⚠️ [AUTH] Refresh token inválido ou expirado/não encontrado no DB.');
-      return res.status(401).json({ msg: 'Refresh token inválido ou expirado. Faça login novamente.' });
+    if (!usuario.senha) {
+      console.warn('⚠️ [AUTH] Usuário sem senha cadastrada:', usuario.login);
+      return res.status(400).json({ msg: 'Este usuário foi criado sem senha. Use login social ou redefina sua senha.' });
     }
     const accessToken = gerarAccessToken(usuario);
     console.log('✅ [AUTH] Novo access token gerado via refresh para:', usuario.login);
