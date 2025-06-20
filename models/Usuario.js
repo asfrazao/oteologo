@@ -10,7 +10,13 @@ const usuarioSchema = new mongoose.Schema({
   senha: { type: String, required: true },
   avatar: { type: String },
   perfil: { type: String, enum: ['usuario', 'moderador', 'admin'], default: 'usuario' },
-  criadoEm: { type: Date, default: Date.now }
+  criadoEm: { type: Date, default: Date.now },
+  refreshTokens: [
+    {
+      token: String,
+      expira: Date,
+    }
+  ]
 });
 
 module.exports = mongoose.model('Usuario', usuarioSchema);
