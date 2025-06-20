@@ -163,6 +163,14 @@
     </div>
 
     <div class="status" id="status-msg"></div>
+
+    <script>
+        window.onload = function () {
+            if (window.google && google.accounts && google.accounts.id) {
+                google.accounts.id.disableAutoSelect();
+            }
+        };
+    </script>
 </main>
 
 <footer>
