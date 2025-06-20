@@ -132,49 +132,54 @@ exports.cadastrar = async (req, res) => {
 
 // LOGIN — retorna access e refresh tokens
 exports.login = async (req, res) => {
-  console.log("🔑 [AUTH] Recebida requisição de login. Payload:", { login: req.body.login });
+  console.log("🔑 [AUTH] Requisição de login:", req.body);
   try {
     const { login, senha } = req.body;
-    // Busca usuário pelo login (salvo em minúsculas)
+    if (!login || !senha) {
+      return res.status(400).json({ msg: 'Login e senha são obrigatórios.' });
+    }
+
     const usuario = await Usuario.findOne({ login: login.toLowerCase() });
     if (!usuario) {
-      console.warn('⚠️ [AUTH] Tentativa de login: Usuário não encontrado.');
       return res.status(400).json({ msg: 'Usuário não encontrado.' });
     }
+
+    if (!usuario.senha) {
+      console.warn("❌ Usuário encontrado mas senha não definida no banco.");
+      return res.status(400).json({ msg: 'Senha não cadastrada para este usuário.' });
+    }
+
     const senhaConfere = await bcrypt.compare(senha, usuario.senha);
     if (!senhaConfere) {
-      console.warn('⚠️ [AUTH] Tentativa de login: Senha inválida para usuário', usuario.login);
       return res.status(400).json({ msg: 'Senha inválida.' });
     }
 
-    // Gera tokens
     const accessToken = gerarAccessToken(usuario);
     const refreshToken = gerarRefreshToken();
 
-    // Limpa refresh tokens expirados antes de adicionar um novo
     usuario.refreshTokens = usuario.refreshTokens.filter(rt => new Date(rt.expira) > new Date());
-    // Salva o novo refresh token
     usuario.refreshTokens.push({
       token: refreshToken,
       expira: new Date(Date.now() + REFRESH_TOKEN_EXPIRES_DAYS * 24 * 60 * 60 * 1000)
     });
     await usuario.save();
-    console.log('✅ [AUTH] Login bem-sucedido para usuário:', usuario.login);
-    res.status(200).json({
+
+    return res.status(200).json({
       accessToken,
       refreshToken,
       usuario: {
         id: usuario._id,
         login: usuario.login,
         nome: usuario.nome,
-        role: usuario.role // Inclui a role no retorno do login
+        role: usuario.role
       }
     });
   } catch (err) {
-    console.error('❌ [AUTH] Erro interno ao logar:', err);
-    res.status(500).json({ msg: 'Erro ao logar. Por favor, tente novamente mais tarde.', erro: err.message });
+    console.error('❌ [AUTH] Erro ao logar:', err);
+    return res.status(500).json({ msg: 'Erro interno ao tentar logar.', erro: err.message });
   }
 };
+
 
 // REFRESH TOKEN — renova access token caso refresh válido
 exports.refresh = async (req, res) => {
