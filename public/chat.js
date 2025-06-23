@@ -4,9 +4,17 @@ const params = new URLSearchParams(window.location.search);
 const sala = params.get("sala") || "Geral";
 const usuario = params.get("usuario") || "Anônimo";
 
+// 🔤 Gera apelido simplificado para menções
+const apelidoSimplificado = usuario
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // remove acentos
+    .replace(/\s+/g, "_"); // troca espaços por underline
+
 localStorage.setItem("apelido", usuario);
+localStorage.setItem("apelidoSimplificado", apelidoSimplificado);
+
 document.getElementById("sala-titulo").textContent = `Sala: ${sala}`;
-socket.emit("entrar", { sala, usuario });
+socket.emit("entrar", { sala, usuario, avatar: localStorage.getItem("avatar") || "" });
 
 let usuariosOnline = [];
 
@@ -49,8 +57,9 @@ function exibirMensagem(data) {
   const div = document.createElement("div");
   div.className = "mensagem";
 
-  const apelidoAtual = localStorage.getItem("apelido");
-  const isDestinatario = data.destinatario === apelidoAtual;
+  const apelidoAtual = localStorage.getItem("apelidoSimplificado");
+  const destinatario = data.destinatario?.toLowerCase().trim();
+  const isDestinatario = destinatario && apelidoAtual && destinatario === apelidoAtual;
 
   if (isDestinatario) {
     div.classList.add("mensagem-destacada");
@@ -65,7 +74,7 @@ function exibirMensagem(data) {
   });
 
   const icone = isDestinatario ? "🔔 " : "";
-  const avatar = localStorage.getItem("avatar");
+  const avatar = data.avatar || '';
   const nome = data.usuario;
   const nomeHTML = avatar
       ? `<img src="${avatar}" class="avatar"> <span>${nome}</span>`
@@ -75,9 +84,6 @@ function exibirMensagem(data) {
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
 }
-
-
-
 
 // 🧠 MENÇÕES COM @
 const inputMensagem = document.getElementById("msg");
@@ -129,10 +135,13 @@ function mostrarSugestoes(termo) {
 
   sugestoesAtuais = usuariosOnline
       .map(u => (typeof u === 'string' ? u : u.usuario || u.nome || ''))
-      .filter(nome => nome.toLowerCase().startsWith(termo))
+      .map(nome =>
+          nome.toLowerCase()
+              .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+              .replace(/\s+/g, "_")
+      )
+      .filter(nome => nome.startsWith(termo))
       .slice(0, 5);
-
-
 
   if (sugestoesAtuais.length === 0) {
     ocultarSugestoes();
@@ -178,6 +187,7 @@ function inserirApelido(apelido) {
 // Sair da sala
 document.getElementById("btn-sair").addEventListener("click", () => {
   localStorage.removeItem("apelido");
+  localStorage.removeItem("apelidoSimplificado");
   localStorage.removeItem("token");
   localStorage.removeItem("sala");
   window.location.href = "/auth.html";

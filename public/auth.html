@@ -148,7 +148,6 @@
          data-ux_mode="popup"
          data-auto_prompt="false"
          data-auto_select="false"
-         data-prompt_parent_id="g_id_signin"
          data-callback="handleCredentialResponse">
     </div>
 
@@ -166,11 +165,20 @@
 
     <script>
         window.onload = function () {
-            if (window.google && google.accounts && google.accounts.id) {
+            if (window.google?.accounts?.id) {
                 google.accounts.id.disableAutoSelect();
             }
         };
+
+        // Executa imediatamente se o SDK já estiver carregado
+        if (window.google?.accounts?.id) {
+            google.accounts.id.disableAutoSelect();
+        }
     </script>
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+
 </main>
 
 <footer>

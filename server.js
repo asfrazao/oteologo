@@ -12,8 +12,12 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+
 const historicoPorSala = {};
 const usuarioPorSocket = {};
+const salas = {}; // ✅ Adicionando isso corrige o erro!
+const usuariosPorSala = {}; // ✅ Também necessário, pois você usa isso no socket.on('entrar')
+
 
 console.log('[SERVER] Iniciando aplicação...');
 
@@ -51,21 +55,34 @@ io.on('connection', (socket) => {
   // 🔄 Emite o mapa de usuários por sala imediatamente ao conectar
   socket.emit("usuariosNaSala", gerarMapaDeSalas());
 
-  socket.on('entrar', ({ sala, usuario }) => {
+  socket.on('entrar', ({ sala, usuario, avatar }) => {
     socket.join(sala);
-    usuarioPorSocket[socket.id] = { usuario, sala };
+    usuarioPorSocket[socket.id] = { usuario, sala, avatar };
 
-    const historico = historicoPorSala[sala] || [];
-    if (historico.length > 0) {
-      socket.emit('historico', historico.slice(-5));
+    if (!salas[sala]) {
+      salas[sala] = [];
     }
-
-    const msgEntrada = { usuario: 'O Teólogo disse', mensagem: `${usuario} entrou na sala.` };
+    const msgEntrada = {
+      usuario: 'O Teólogo disse',
+      mensagem: `${usuario} entrou na sala.`,
+      avatar: ''
+    };
     registrarMensagem(sala, msgEntrada);
     io.to(sala).emit('mensagem', msgEntrada);
 
-    console.log(`👤 ${usuario} entrou na sala ${sala}`);
-    emitirTodosUsuariosPorSala();
+    if (!usuariosPorSala[sala]) {
+      usuariosPorSala[sala] = [];
+    }
+
+    if (!usuariosPorSala[sala].includes(usuario)) {
+      usuariosPorSala[sala].push(usuario);
+    }
+
+    // Envia histórico da sala
+    socket.emit('historico', salas[sala]);
+
+    // Atualiza lista de usuários para todos
+    io.to(sala).emit('usuariosNaSala', usuariosPorSala[sala]);
   });
 
   socket.on('mensagem', (data) => {
@@ -95,7 +112,14 @@ io.on('connection', (socket) => {
       const match = texto.match(/@(\w{2,})/);
       const destinatario = match ? match[1] : null;
 
-      const msgObj = { usuario, mensagem: texto };
+      const avatar = usuarioPorSocket[socket.id]?.avatar || '';
+
+      const msgObj = {
+        usuario,
+        mensagem: texto,
+        avatar
+      };
+
       if (destinatario) msgObj.destinatario = destinatario;
 
       registrarMensagem(sala, msgObj);
@@ -105,11 +129,12 @@ io.on('connection', (socket) => {
   });
 
 
+
   socket.on('disconnecting', () => {
     const infos = usuarioPorSocket[socket.id];
     if (infos) {
       const { usuario, sala } = infos;
-      const msgSaida = { usuario: 'O Teólogo disse', mensagem: `${usuario} saiu da sala.` };
+      const msgSaida = { usuario: 'O Teólogo disse', mensagem: `${usuario} saiu da sala.`, avatar: '' };
       registrarMensagem(sala, msgSaida);
       socket.to(sala).emit('mensagem', msgSaida);
       console.log(`🚪 ${usuario} saiu da sala ${sala}`);
@@ -121,6 +146,8 @@ io.on('connection', (socket) => {
     emitirTodosUsuariosPorSala();
     console.log('🔴 Usuário desconectado');
   });
+
+
 });
 
 function registrarMensagem(sala, msgObj) {
