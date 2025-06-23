@@ -156,10 +156,10 @@
          id="g_id_signin"
          data-type="standard"
          data-shape="rect"
-         data-theme="outline"
-         data-text="signin_with"
-         data-size="large"
-         data-logo_alignment="left">
+         data-theme="filled_blue"
+    data-text="signin_with"
+    data-size="large"
+    data-logo_alignment="left">
     </div>
 
     <div class="status" id="status-msg"></div>
@@ -204,38 +204,38 @@
         return JSON.parse(jsonPayload);
     }
 
-    window.onload = function () {
-        if (window.google && google.accounts && google.accounts.id) {
-            google.accounts.id.disableAutoSelect();
-        }
-    }
-
     async function realizarLogin() {
         const apelido = document.getElementById('login-apelido').value;
         const senha = document.getElementById('login-senha').value;
+        const status = document.getElementById('status-msg');
+
         if (!apelido || !senha) {
-            document.getElementById('status-msg').textContent = 'Preencha todos os campos!';
+            status.textContent = 'Preencha todos os campos!';
             return;
         }
+
         try {
             const res = await fetch('/api/auth/login', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({login: apelido, senha})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ login: apelido, senha })
             });
             const data = await res.json();
             if (res.ok) {
                 localStorage.setItem('token', data.accessToken);
                 localStorage.setItem('refreshToken', data.refreshToken);
                 localStorage.setItem('apelido', data.usuario.login);
-                document.getElementById('status-msg').textContent = 'Login realizado com sucesso!';
+                if (data.usuario.avatar) {
+                    localStorage.setItem('avatar', data.usuario.avatar);
+                }
+                status.textContent = 'Login realizado com sucesso!';
                 setTimeout(() => window.location.href = '/salas', 900);
             } else {
-                document.getElementById('status-msg').textContent = data.msg || 'Erro ao realizar login.';
+                status.textContent = data.msg || 'Erro ao realizar login.';
             }
         } catch (err) {
-            console.error('Erro na requisição de login:', err);
-            document.getElementById('status-msg').textContent = 'Erro na requisição de login. Tente novamente.';
+            console.error('Erro ao logar:', err);
+            status.textContent = 'Erro na requisição. Tente novamente.';
         }
     }
 
@@ -243,13 +243,8 @@
         toggle.addEventListener('click', (e) => {
             const targetId = e.target.dataset.target;
             const passwordField = document.getElementById(targetId);
-            if (passwordField.type === 'password') {
-                passwordField.type = 'text';
-                e.target.textContent = '🙈';
-            } else {
-                passwordField.type = 'password';
-                e.target.textContent = '👁️';
-            }
+            passwordField.type = passwordField.type === 'password' ? 'text' : 'password';
+            e.target.textContent = passwordField.type === 'password' ? '👁️' : '🙈';
         });
     });
 
@@ -268,24 +263,25 @@
     });
 
     document.getElementById('logout-btn').addEventListener('click', async () => {
-        document.getElementById('status-msg').textContent = 'Saindo...';
+        const status = document.getElementById('status-msg');
+        status.textContent = 'Saindo...';
         const refreshToken = localStorage.getItem('refreshToken');
         if (refreshToken) {
             try {
                 await fetch('/api/auth/logout', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ refreshToken })
                 });
             } catch (err) {
-                console.error('Erro na requisição de logout:', err);
+                console.error('Erro ao sair:', err);
             }
         }
         localStorage.clear();
-        if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+        if (window.google?.accounts?.id) {
             google.accounts.id.disableAutoSelect();
         }
-        document.getElementById('status-msg').textContent = 'Logout realizado!';
+        status.textContent = 'Logout realizado!';
         setTimeout(() => window.location.href = '/auth', 900);
     });
 
@@ -314,6 +310,7 @@
         document.getElementById('status-msg').textContent = 'Faça login ou cadastre-se.';
     }
 </script>
+
 
 <!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-4TV9KF3766"></script>
