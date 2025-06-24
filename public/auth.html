@@ -166,18 +166,14 @@
     <script>
         window.onload = function () {
             if (window.google?.accounts?.id) {
-                google.accounts.id.disableAutoSelect();  // já presente
-                google.accounts.id.prompt((notification) => {
-                    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                        // Força re-renderização sem one-tap
-                        document.getElementById("g_id_signin").style.display = "block";
-                    } else {
-                        // Oculta o one-tap
-                        document.getElementById("g_id_signin").style.display = "none";
-                    }
-                });
+                google.accounts.id.disableAutoSelect();
             }
         };
+
+        // Executa imediatamente se o SDK já estiver carregado
+        if (window.google?.accounts?.id) {
+            google.accounts.id.disableAutoSelect();
+        }
     </script>
 
 </main>
