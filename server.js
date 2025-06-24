@@ -134,9 +134,9 @@ io.on('connection', (socket) => {
     const infos = usuarioPorSocket[socket.id];
     if (infos) {
       const { usuario, sala } = infos;
-      const msgSaida = { usuario: 'O Teólogo disse', mensagem: `${usuario} saiu da sala.`, avatar: '' };
+/*      const msgSaida = { usuario: 'O Teólogo disse', mensagem: `${usuario} saiu da sala.`, avatar: '' };
       registrarMensagem(sala, msgSaida);
-      socket.to(sala).emit('mensagem', msgSaida);
+      socket.to(sala).emit('mensagem', msgSaida);*/
       console.log(`🚪 ${usuario} saiu da sala ${sala}`);
     }
   });

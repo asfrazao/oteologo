@@ -7,24 +7,24 @@
 
 
     <!-- Meta Description para Google -->
-    <meta name="description" content="Crie sua própria sala de debate bíblico com um clique. Compartilhe fé, conduza estudos e debata com cristãos de todo o Brasil.">
+    <meta name="description" content="Cadastre-se gratuitamente na plataforma O Teólogo e participe de salas de debate bíblico, estudos teológicos e uma comunidade cristã ativa.">
 
     <!-- Robôs e indexação -->
     <meta name="robots" content="index, follow">
     <meta name="author" content="O Teólogo">
 
     <!-- Open Graph (Facebook, LinkedIn) -->
-    <meta property="og:title" content="Crie Sua Sala Bíblica – O Teólogo">
-    <meta property="og:description" content="Abra agora uma sala temática de debate cristão. Compartilhe conhecimento e cresça em comunhão no O Teólogo.">
-    <meta name="twitter:title" content="Crie Sua Sala no O Teólogo – Participe de Debates Cristãos">
-    <meta name="twitter:description" content="Comande sua própria sala bíblica e debata com irmãos da fé. Uma plataforma cristã para estudos e edificação mútua.">
-
+    <meta property="og:title" content="Cadastre-se no O Teólogo – Participe de Debates Bíblicos e Estudos Teológicos">
+    <meta property="og:description" content="Junte-se à maior comunidade cristã online para debater a Bíblia, crescer na fé e estudar teologia com irmãos de todo o Brasil.">
+    <meta property="og:image" content="https://oteologo.com.br/img/logoTeologo.png">
+    <meta property="og:url" content="https://oteologo.com.br/auth">
+    <meta property="og:type" content="website">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="O Teólogo – Estudos e Comunhão Cristã">
-    <meta name="twitter:description" content="Entre para salas de debate, estude a Bíblia e cresça em comunhão.">
-    <meta name="twitter:image" content="https://oteologo.com.br/img/logo.png">
+    <meta name="twitter:title" content="O Teólogo – Plataforma Cristã de Estudos e Comunhão">
+    <meta name="twitter:description" content="Cadastre-se e participe de debates teológicos, estudos bíblicos e uma comunidade cristã acolhedora.">
+    <meta name="twitter:image" content="https://oteologo.com.br/img/logoTeologo.png">
 
     <!-- Favicon -->
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
@@ -180,6 +180,16 @@
         }
         btnCriar.disabled = false;
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const apelidoStorage = localStorage.getItem('apelido');
+        if (apelidoStorage) {
+            document.getElementById('apelido').textContent = apelidoStorage;
+        } else {
+            document.getElementById('userStatus').textContent = 'Não Logado';
+        }
+    });
+
 </script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-4TV9KF3766"></script>

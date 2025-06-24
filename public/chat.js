@@ -4,11 +4,10 @@ const params = new URLSearchParams(window.location.search);
 const sala = params.get("sala") || "Geral";
 const usuario = params.get("usuario") || "Anônimo";
 
-// 🔤 Gera apelido simplificado para menções
 const apelidoSimplificado = usuario
     .toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // remove acentos
-    .replace(/\s+/g, "_"); // troca espaços por underline
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, "_");
 
 localStorage.setItem("apelido", usuario);
 localStorage.setItem("apelidoSimplificado", apelidoSimplificado);
@@ -85,7 +84,6 @@ function exibirMensagem(data) {
   chat.scrollTop = chat.scrollHeight;
 }
 
-// 🧠 MENÇÕES COM @
 const inputMensagem = document.getElementById("msg");
 const sugestoesBox = document.getElementById("sugestoes");
 
@@ -184,11 +182,18 @@ function inserirApelido(apelido) {
   ocultarSugestoes();
 }
 
-// Sair da sala
-document.getElementById("btn-sair").addEventListener("click", () => {
-  localStorage.removeItem("apelido");
-  localStorage.removeItem("apelidoSimplificado");
-  localStorage.removeItem("token");
-  localStorage.removeItem("sala");
-  window.location.href = "/auth.html";
+// Sair da sala com confirmação
+const btnSair = document.getElementById("btn-sair");
+
+btnSair.addEventListener("click", () => {
+  const confirmar = confirm("Deseja realmente sair da sala?");
+  if (confirmar) {
+    socket.emit("mensagem", {
+      sala,
+      usuario: "O Teólogo",
+      mensagem: `<i style='color:red;'>${usuario} saiu da sala.</i>`
+    });
+    socket.emit("sair", { sala, usuario });
+    window.location.href = "/";
+  }
 });

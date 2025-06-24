@@ -6,22 +6,27 @@
     <title>O Teólogo – Debates Bíblicos, Salas Temáticas e Estudos Online</title>
     <link rel="stylesheet" href="styles.css?v=1" />
 
-    <meta name="description" content="Conecte-se a cristãos do Brasil! Participe de salas de debate bíblico, estudos teológicos e cresça espiritualmente com O Teólogo.">
+    <!-- Meta Description para Google -->
+    <meta name="description" content="Cadastre-se gratuitamente na plataforma O Teólogo e participe de salas de debate bíblico, estudos teológicos e uma comunidade cristã ativa.">
 
+    <!-- Robôs e indexação -->
     <meta name="robots" content="index, follow">
     <meta name="author" content="O Teólogo">
 
-    <meta property="og:title" content="Participe do O Teólogo – Salas de Debate Bíblico e Comunhão Cristã">
-    <meta property="og:description" content="Entre em uma plataforma de comunhão cristã. Crie ou entre em salas de debate bíblico e estude a Palavra com outros teólogos.">
+    <!-- Open Graph (Facebook, LinkedIn) -->
+    <meta property="og:title" content="Cadastre-se no O Teólogo – Participe de Debates Bíblicos e Estudos Teológicos">
+    <meta property="og:description" content="Junte-se à maior comunidade cristã online para debater a Bíblia, crescer na fé e estudar teologia com irmãos de todo o Brasil.">
+    <meta property="og:image" content="https://oteologo.com.br/img/logoTeologo.png">
+    <meta property="og:url" content="https://oteologo.com.br/auth">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://oteologo.com.br/">
-    <meta property="og:image" content="https://oteologo.com.br/img/logo.png">
 
+    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="O Teólogo – Estudos e Comunhão Cristã">
-    <meta name="twitter:description" content="Entre para salas de debate, estude a Bíblia e cresça em comunhão.">
-    <meta name="twitter:image" content="https://oteologo.com.br/img/logo.png">
+    <meta name="twitter:title" content="O Teólogo – Plataforma Cristã de Estudos e Comunhão">
+    <meta name="twitter:description" content="Cadastre-se e participe de debates teológicos, estudos bíblicos e uma comunidade cristã acolhedora.">
+    <meta name="twitter:image" content="https://oteologo.com.br/img/logoTeologo.png">
 
+    <!-- Favicon -->
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
 </head>
 <body>
@@ -52,8 +57,8 @@
 
     <section class="estudos-chamada">
         <h2>Aprofunde-se na Palavra: Seus Estudos Teológicos Começam Aqui!</h2>
-        <p>A fé é uma jornada de contínuo aprendizado e descoberta. Em "O Teólogo", oferecemos um vasto acervo de <strong>estudos teológicos aprofundados</strong>, cuidadosamente elaborados para nutrir sua mente e seu espírito. Desvende os mistérios da Bíblia, compreenda as doutrinas essenciais da fé cristã e fortaleça seus argumentos para defender a verdade em um mundo em constante questionamento.</p>
-        <p>Do que é a <strong>Trindade</strong> ao significado de <strong>Soteriologia</strong>, da fascinante <strong>História da Igreja</strong> à contundente <strong> Defesa da Fé</strong>, cada tópico é uma porta para um conhecimento que transformará sua compreensão de Deus e de Si mesmo. Prepare-se para uma jornada emocionante de sabedoria e revelação!</p>
+        <p>Em "O Teólogo", você aprofunda sua fé com <strong>estudos teológicos sólidos</strong>, preparados para fortalecer sua mente e espírito. Descubra os mistérios da Bíblia e defenda a verdade com convicção.</p>
+        <p>De temas como <strong>Trindade</strong> e <strong>Soteriologia</strong> à <strong>História da Igreja</strong> e <strong>Defesa da Fé</strong>, cada estudo é um passo rumo a uma fé mais firme e esclarecida.</p>
         <button class="btn" onclick="window.location='/estudos/estudos-teologicos.html'">Explorar Estudos Teológicos</button>
     </section>
 
@@ -77,6 +82,16 @@
 <script>
     const apelido = localStorage.getItem('apelido');
     if (apelido) document.getElementById('apelido').textContent = apelido;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const apelidoStorage = localStorage.getItem('apelido');
+        if (apelidoStorage) {
+            document.getElementById('apelido').textContent = apelidoStorage;
+        } else {
+            document.getElementById('userStatus').textContent = 'Não Logado';
+        }
+    });
+
 </script>
 
 

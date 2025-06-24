@@ -7,23 +7,24 @@
 
 
     <!-- Meta Description para Google -->
-    <meta name="description" content="Entre em contato com O Teólogo. Envie dúvidas, sugestões ou mensagens e ajude a melhorar nossa plataforma cristã de estudos e debates bíblicos.">
+    <meta name="description" content="Cadastre-se gratuitamente na plataforma O Teólogo e participe de salas de debate bíblico, estudos teológicos e uma comunidade cristã ativa.">
 
     <!-- Robôs e indexação -->
     <meta name="robots" content="index, follow">
     <meta name="author" content="O Teólogo">
 
     <!-- Open Graph (Facebook, LinkedIn) -->
-    <meta property="og:title" content="Fale Conosco – O Teólogo">
-    <meta property="og:description" content="Tem uma dúvida, sugestão ou mensagem? Escreva para O Teólogo e participe da construção de uma plataforma cristã melhor.">
-    <meta name="twitter:title" content="Fale Conosco – Envie Sua Mensagem ao O Teólogo">
-    <meta name="twitter:description" content="Envie sua mensagem, sugestão ou dúvida. Queremos te ouvir para crescer juntos em fé e conhecimento.">
+    <meta property="og:title" content="Cadastre-se no O Teólogo – Participe de Debates Bíblicos e Estudos Teológicos">
+    <meta property="og:description" content="Junte-se à maior comunidade cristã online para debater a Bíblia, crescer na fé e estudar teologia com irmãos de todo o Brasil.">
+    <meta property="og:image" content="https://oteologo.com.br/img/logoTeologo.png">
+    <meta property="og:url" content="https://oteologo.com.br/auth">
+    <meta property="og:type" content="website">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="O Teólogo – Estudos e Comunhão Cristã">
-    <meta name="twitter:description" content="Entre para salas de debate, estude a Bíblia e cresça em comunhão.">
-    <meta name="twitter:image" content="https://oteologo.com.br/img/logo.png">
+    <meta name="twitter:title" content="O Teólogo – Plataforma Cristã de Estudos e Comunhão">
+    <meta name="twitter:description" content="Cadastre-se e participe de debates teológicos, estudos bíblicos e uma comunidade cristã acolhedora.">
+    <meta name="twitter:image" content="https://oteologo.com.br/img/logoTeologo.png">
 
     <!-- Favicon -->
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
@@ -81,7 +82,20 @@
 <script>
     const apelido = localStorage.getItem('apelido');
     if (apelido) document.getElementById('apelido').textContent = apelido;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const apelidoStorage = localStorage.getItem('apelido');
+        if (apelidoStorage) {
+            document.getElementById('apelido').textContent = apelidoStorage;
+        } else {
+            document.getElementById('userStatus').textContent = 'Não Logado';
+        }
+    });
+
 </script>
+
+
+
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-4TV9KF3766"></script>
 <script>

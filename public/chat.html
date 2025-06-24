@@ -5,17 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Debate ao Vivo – Participe da Sala de Chat em O Teólogo</title>
 
-    <!-- Meta Description -->
-    <meta name="description" content="Converse ao vivo com outros cristãos em salas temáticas. Participe dos debates bíblicos no chat de O Teólogo e compartilhe fé e conhecimento.">
+    <!-- Meta Description para Google -->
+    <meta name="description" content="Cadastre-se gratuitamente na plataforma O Teólogo e participe de salas de debate bíblico, estudos teológicos e uma comunidade cristã ativa.">
+
+    <!-- Robôs e indexação -->
     <meta name="robots" content="index, follow">
     <meta name="author" content="O Teólogo">
-    <meta property="og:title" content="Chat Bíblico Ao Vivo – Participe dos Debates em O Teólogo">
-    <meta property="og:description" content="Entre agora em uma sala temática e debata temas cristãos com irmãos da fé. Cresça em comunhão e conhecimento.">
-    <meta name="twitter:title" content="Participe do Chat Bíblico em O Teólogo">
-    <meta name="twitter:description" content="Salas abertas de debate teológico, comunhão e ensino bíblico. Envolva-se com outros cristãos no chat ao vivo.">
+
+    <!-- Open Graph (Facebook, LinkedIn) -->
+    <meta property="og:title" content="Cadastre-se no O Teólogo – Participe de Debates Bíblicos e Estudos Teológicos">
+    <meta property="og:description" content="Junte-se à maior comunidade cristã online para debater a Bíblia, crescer na fé e estudar teologia com irmãos de todo o Brasil.">
+    <meta property="og:image" content="https://oteologo.com.br/img/logoTeologo.png">
+    <meta property="og:url" content="https://oteologo.com.br/auth">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content="https://oteologo.com.br/img/logo.png">
+    <meta name="twitter:title" content="O Teólogo – Plataforma Cristã de Estudos e Comunhão">
+    <meta name="twitter:description" content="Cadastre-se e participe de debates teológicos, estudos bíblicos e uma comunidade cristã acolhedora.">
+    <meta name="twitter:image" content="https://oteologo.com.br/img/logoTeologo.png">
+
+    <!-- Favicon -->
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+
     <link rel="stylesheet" href="styles.css" />
     <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
     <style>
@@ -101,6 +114,43 @@
             margin: 0 2px;
             display: inline-block;
         }
+        #modal-sair {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            display: none;
+        }
+        #modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+        #modal-content h3 {
+            margin-bottom: 1rem;
+            color: #003366;
+        }
+        #modal-content button {
+            margin: 0.5rem;
+            padding: 0.75rem 1.2rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+        }
+        #modal-confirm {
+            background-color: #007BFF;
+            color: white;
+        }
+        #modal-cancel {
+            background-color: #ccc;
+        }
         footer {
             text-align: center;
             margin-top: 2rem;
@@ -114,7 +164,6 @@
     </style>
 </head>
 <body>
-
 <div class="top-bar"><a href="/apoie.html" style="color:white;">APOIE O PROJETO E GANHE UM PRESENTE!</a></div>
 <div class="header-logo"><div class="logo">O Teólogo</div></div>
 <nav class="menu">
@@ -126,7 +175,6 @@
     <a href="/estudos/estudos-teologicos.html">Estudos Teológicos</a>
     <span id="userStatus">Logado como: <span id="apelido"></span></span>
 </nav>
-
 <main>
     <h2 id="sala-titulo">Sala:</h2>
     <div id="chat-box"></div>
@@ -138,8 +186,14 @@
         <button class="btn" type="button" id="btn-sair">Sair</button>
         <emoji-picker id="emoji-picker"></emoji-picker>
     </form>
-
 </main>
+<div id="modal-sair">
+    <div id="modal-content">
+        <h3>Deseja realmente sair da sala?</h3>
+        <button id="modal-confirm">Confirmar</button>
+        <button id="modal-cancel">Cancelar</button>
+    </div>
+</div>
 <script src="/socket.io/socket.io.js"></script>
 <script src="chat.js"></script>
 <script>
@@ -162,7 +216,33 @@
             emojiPicker.style.display = "none";
         }
     });
+
+    const btnSair = document.getElementById('btn-sair');
+    const modalSair = document.getElementById('modal-sair');
+    const modalConfirm = document.getElementById('modal-confirm');
+    const modalCancel = document.getElementById('modal-cancel');
+
+    btnSair.addEventListener('click', () => {
+        modalSair.style.display = 'flex';
+    });
+
+    modalCancel.addEventListener('click', () => {
+        modalSair.style.display = 'none';
+    });
+
 </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const apelidoStorage = localStorage.getItem('apelido');
+        if (apelidoStorage) {
+            document.getElementById('apelido').textContent = apelidoStorage;
+        } else {
+            document.getElementById('userStatus').textContent = 'Não Logado';
+        }
+    });
+</script>
+
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-4TV9KF3766"></script>
 <script>
     window.dataLayer = window.dataLayer || [];

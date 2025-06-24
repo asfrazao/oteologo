@@ -5,23 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Login e Cadastro - Plataforma Cristã O Teólogo</title>
 
-    <meta name="description" content="Acesse sua conta ou cadastre-se gratuitamente na plataforma cristã O Teólogo. Participe de salas de debate bíblico, estude teologia e cresça espiritualmente.">
-    <meta name="keywords" content="Login, Cadastro, O Teólogo, Acesso, Plataforma Cristã, Debates Bíblicos, Estudo Bíblico, Comunhão Cristã, Estudos Teológicos">
-    <meta name="author" content="O Teólogo">
-    <meta name="robots" content="index, follow">
-    <meta property="og:title" content="Acesse ou Cadastre-se - O Teólogo">
-    <meta property="og:description" content="Entre para a comunidade O Teólogo e participe de estudos bíblicos, debates e edificação cristã. Login ou cadastro gratuitos.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://oteologo.com.br/auth">
-    <meta property="og:image" content="https://oteologo.com.br/img/logo.png">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Login - O Teólogo">
-    <meta name="twitter:description" content="Participe de debates bíblicos online. Acesse ou crie sua conta na plataforma cristã O Teólogo.">
-    <meta name="twitter:image" content="https://oteologo.com.br/img/logo.png">
-    <link rel="canonical" href="https://oteologo.com.br/auth" />
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="styles.css" />
+    <!-- Meta Description para Google -->
+    <meta name="description" content="Cadastre-se gratuitamente na plataforma O Teólogo e participe de salas de debate bíblico, estudos teológicos e uma comunidade cristã ativa.">
 
+    <!-- Robôs e indexação -->
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="O Teólogo">
+
+    <!-- Open Graph (Facebook, LinkedIn) -->
+    <meta property="og:title" content="Cadastre-se no O Teólogo – Participe de Debates Bíblicos e Estudos Teológicos">
+    <meta property="og:description" content="Junte-se à maior comunidade cristã online para debater a Bíblia, crescer na fé e estudar teologia com irmãos de todo o Brasil.">
+    <meta property="og:image" content="https://oteologo.com.br/img/logoTeologo.png">
+    <meta property="og:url" content="https://oteologo.com.br/auth">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="O Teólogo – Plataforma Cristã de Estudos e Comunhão">
+    <meta name="twitter:description" content="Cadastre-se e participe de debates teológicos, estudos bíblicos e uma comunidade cristã acolhedora.">
+    <meta name="twitter:image" content="https://oteologo.com.br/img/logoTeologo.png">
+
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         main {
             max-width: 420px;
@@ -38,22 +46,27 @@
             gap: 1rem;
             margin-bottom: 1.5rem;
         }
+
         .form-group input {
             padding: 0.9rem;
             font-size: 1.05rem;
             border-radius: 8px;
             border: 1px solid #ccc;
             width: 100%;
-            box-sizing: border-box;
+            box-sizing: border-box; /* ← garante que padding não ultrapasse a largura */
         }
+
         .password-container {
             position: relative;
-            width: 100%;
+            width: 100%; /* ← ocupa 100% da largura da form-group */
         }
+
         .password-container input {
-            padding-right: 3em;
             width: 100%;
+            padding-right: 2.5rem; /* espaço para o ícone 👁️ */
+            box-sizing: border-box; /* ← essencial para alinhamento */
         }
+
         .password-toggle {
             position: absolute;
             right: 10px;
@@ -63,55 +76,46 @@
             color: #888;
             font-size: 0.9em;
         }
+
         .btn-row {
             display: flex;
             gap: 1rem;
             justify-content: center;
-            margin-bottom: 0.7rem;
         }
         .btn, .btn-logout {
             flex: 1;
             background: #007bff;
             color: #fff;
-            font-weight: bold;
             padding: 0.9rem 0;
             border-radius: 8px;
             border: none;
             cursor: pointer;
-            font-size: 1rem;
-            transition: background 0.2s;
-        }
-        .btn:hover, .btn-logout:hover {
-            background: #0056b3;
         }
         .btn-cadastrar {
             display: block;
             width: 100%;
             background: #00b894;
             color: #fff;
-            font-weight: bold;
+            margin-top: 1rem;
             padding: 0.95rem 0;
             border-radius: 8px;
             border: none;
             cursor: pointer;
-            font-size: 1rem;
-            transition: background 0.2s;
-            margin-top: 1.2rem;
         }
-        .btn-cadastrar:hover {
-            background: #019172;
-        }
-        .status {
-            margin-top: 1.5rem;
+        #status-msg {
+            margin-top: 1rem;
             color: #003366;
-            font-weight: bold;
         }
     </style>
 </head>
 <body>
+<div class="top-bar">
+    <a href="/apoie.html" style="color:white;">APOIE O PROJETO E GANHE UM PRESENTE!</a>
+</div>
+<div class="header-logo">
+    <div class="logo">O Teólogo</div>
+</div>
 
-<div class="top-bar"><a href="/apoie.html" style="color:white;">APOIE O PROJETO E GANHE UM PRESENTE!</a></div>
-<div class="header-logo"><div class="logo">O Teólogo</div></div>
 <nav class="menu">
     <a href="/">Início</a>
     <a href="/salas">Salas Disponíveis</a>
@@ -123,59 +127,21 @@
 </nav>
 
 <main>
-    <h2>Login/Logout</h2>
+    <h2>Login / Logout</h2>
     <div class="form-group">
-        <input type="text" id="login-apelido" placeholder="Apelido de Login" required autocomplete="off" />
+        <input type="text" id="login-apelido" placeholder="Apelido de Login" />
         <div class="password-container">
-            <input type="password" id="login-senha" placeholder="Senha" required autocomplete="off" />
+            <input type="password" id="login-senha" placeholder="Senha" />
             <span class="password-toggle" data-target="login-senha">👁️</span>
         </div>
     </div>
     <div class="btn-row">
         <button class="btn" id="entrar-btn">Entrar</button>
-        <button type="button" class="btn-logout" id="logout-btn">Sair</button>
+        <button class="btn-logout" id="logout-btn">Sair</button>
     </div>
-
-    <button class="btn-cadastrar" id="cadastrar-btn" type="button">Cadastrar</button>
-
-    <!-- Google Login SDK -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-
-    <div id="g_id_onload"
-         data-client_id="645041222379-4pg8oiqrbn0onivgtfg194pjvgfuki88.apps.googleusercontent.com"
-         data-login_uri="https://oteologo.com.br/api/google-login"
-         data-context="signin"
-         data-ux_mode="popup"
-         data-auto_prompt="false"
-         data-auto_select="false"
-         data-callback="handleCredentialResponse">
-    </div>
-
-    <div class="g_id_signin"
-         id="g_id_signin"
-         data-type="standard"
-         data-shape="rect"
-         data-theme="filled_blue"
-        data-text="signin_with"
-        data-size="large"
-        data-logo_alignment="left">
-    </div>
-
-    <div class="status" id="status-msg"></div>
-
-    <script>
-        window.onload = function () {
-            if (window.google?.accounts?.id) {
-                google.accounts.id.disableAutoSelect();
-            }
-        };
-
-        // Executa imediatamente se o SDK já estiver carregado
-        if (window.google?.accounts?.id) {
-            google.accounts.id.disableAutoSelect();
-        }
-    </script>
-
+    <button class="btn-cadastrar" id="cadastrar-btn">Cadastrar</button>
+    <div id="google-login-btn" style="margin-top: 1.5rem;"></div>
+    <div id="status-msg">Faça login ou cadastre-se.</div>
 </main>
 
 <footer>
@@ -184,6 +150,24 @@
 </footer>
 
 <script>
+    window.onload = function () {
+        if (window.google?.accounts?.id) {
+            google.accounts.id.initialize({
+                client_id: "645041222379-4pg8oiqrbn0onivgtfg194pjvgfuki88.apps.googleusercontent.com",
+                callback: handleCredentialResponse,
+                auto_select: false,
+                ux_mode: "popup"
+            });
+
+            google.accounts.id.renderButton(
+                document.getElementById("google-login-btn"),
+                { theme: "filled_blue", size: "large", shape: "rect", text: "signin_with" }
+            );
+
+            google.accounts.id.disableAutoSelect();
+        }
+    };
+
     function handleCredentialResponse(response) {
         const userData = parseJwt(response.credential);
         fetch('/api/google-login', {
@@ -196,6 +180,7 @@
                     localStorage.setItem("token", data.token);
                     localStorage.setItem("apelido", userData.name);
                     localStorage.setItem("avatar", userData.picture);
+                    localStorage.setItem("email_google", userData.email); // usado no revoke
                     window.location.href = "/salas.html";
                 }
             });
@@ -209,7 +194,7 @@
         return JSON.parse(jsonPayload);
     }
 
-    async function realizarLogin() {
+    document.getElementById('entrar-btn').addEventListener('click', async () => {
         const apelido = document.getElementById('login-apelido').value;
         const senha = document.getElementById('login-senha').value;
         const status = document.getElementById('status-msg');
@@ -242,35 +227,15 @@
             console.error('Erro ao logar:', err);
             status.textContent = 'Erro na requisição. Tente novamente.';
         }
-    }
-
-    document.querySelectorAll('.password-toggle').forEach(toggle => {
-        toggle.addEventListener('click', (e) => {
-            const targetId = e.target.dataset.target;
-            const passwordField = document.getElementById(targetId);
-            passwordField.type = passwordField.type === 'password' ? 'text' : 'password';
-            e.target.textContent = passwordField.type === 'password' ? '👁️' : '🙈';
-        });
-    });
-
-    document.getElementById('entrar-btn').addEventListener('click', (e) => {
-        e.preventDefault();
-        realizarLogin();
-    });
-
-    ['login-apelido', 'login-senha'].forEach(id => {
-        document.getElementById(id).addEventListener('keydown', (e) => {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                realizarLogin();
-            }
-        });
     });
 
     document.getElementById('logout-btn').addEventListener('click', async () => {
         const status = document.getElementById('status-msg');
         status.textContent = 'Saindo...';
+
         const refreshToken = localStorage.getItem('refreshToken');
+        const email = localStorage.getItem('email_google');
+
         if (refreshToken) {
             try {
                 await fetch('/api/auth/logout', {
@@ -282,12 +247,29 @@
                 console.error('Erro ao sair:', err);
             }
         }
+
         localStorage.clear();
-        if (window.google?.accounts?.id) {
-            google.accounts.id.disableAutoSelect();
+
+        if (email && window.google?.accounts?.id?.revoke) {
+            google.accounts.id.revoke(email, () => {
+                status.textContent = 'Logout completo!';
+                setTimeout(() => window.location.href = '/auth', 900);
+            });
+        } else {
+            if (window.google?.accounts?.id) {
+                google.accounts.id.disableAutoSelect();
+            }
+            status.textContent = 'Logout realizado!';
+            setTimeout(() => window.location.href = '/auth', 900);
         }
-        status.textContent = 'Logout realizado!';
-        setTimeout(() => window.location.href = '/auth', 900);
+    });
+
+    document.querySelectorAll('.password-toggle').forEach(toggle => {
+        toggle.addEventListener('click', (e) => {
+            const input = document.getElementById(e.target.dataset.target);
+            input.type = input.type === 'password' ? 'text' : 'password';
+            e.target.textContent = input.type === 'password' ? '👁️' : '🙈';
+        });
     });
 
     document.getElementById('cadastrar-btn').addEventListener('click', () => {
@@ -296,14 +278,6 @@
 
     const apelido = localStorage.getItem('apelido');
     if (apelido) {
-        document.getElementById('userStatus').style.display = 'inline-block';
-        document.getElementById('apelido').textContent = apelido;
-    } else {
-        document.getElementById('userStatus').style.display = 'none';
-    }
-
-    const token = localStorage.getItem('token');
-    if (token && apelido) {
         document.getElementById('login-apelido').style.display = 'none';
         document.getElementById('login-senha').parentElement.style.display = 'none';
         document.getElementById('entrar-btn').style.display = 'none';
@@ -312,19 +286,18 @@
         document.getElementById('status-msg').textContent = `Logado como: ${apelido}`;
     } else {
         document.getElementById('logout-btn').style.display = 'none';
-        document.getElementById('status-msg').textContent = 'Faça login ou cadastre-se.';
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const apelidoStorage = localStorage.getItem('apelido');
+        if (apelidoStorage) {
+            document.getElementById('apelido').textContent = apelidoStorage;
+        } else {
+            document.getElementById('userStatus').textContent = 'Não Logado';
+        }
+    });
+
 </script>
-
-
-<!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-4TV9KF3766"></script>
-<script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-4TV9KF3766');
-</script>
-
 </body>
 </html>
+<!-- Fim do arquivo -->

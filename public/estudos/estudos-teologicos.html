@@ -131,6 +131,16 @@
 <script>
     const apelido = localStorage.getItem('apelido');
     if (apelido) document.getElementById('apelido').textContent = apelido;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const apelidoStorage = localStorage.getItem('apelido');
+        if (apelidoStorage) {
+            document.getElementById('apelido').textContent = apelidoStorage;
+        } else {
+            document.getElementById('userStatus').textContent = 'Não Logado';
+        }
+    });
+
 </script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-4TV9KF3766"></script>
