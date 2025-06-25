@@ -9,7 +9,6 @@
     </url>
 
     <!-- Páginas principais -->
-    <url><loc>https://oteologo.com.br/index.html</loc><lastmod>2025-06-18</lastmod><priority>0.9</priority></url>
     <url><loc>https://oteologo.com.br/auth.html</loc><lastmod>2025-06-18</lastmod><priority>0.9</priority></url>
     <url><loc>https://oteologo.com.br/cadastro.html</loc><lastmod>2025-06-18</lastmod><priority>0.9</priority></url>
     <url><loc>https://oteologo.com.br/salas.html</loc><lastmod>2025-06-18</lastmod><priority>0.9</priority></url>
@@ -17,6 +16,8 @@
     <url><loc>https://oteologo.com.br/chat.html</loc><lastmod>2025-06-18</lastmod><priority>0.8</priority></url>
     <url><loc>https://oteologo.com.br/apoie.html</loc><lastmod>2025-06-18</lastmod><priority>0.6</priority></url>
     <url><loc>https://oteologo.com.br/faleconosco.html</loc><lastmod>2025-06-18</lastmod><priority>0.6</priority></url>
+    <url><loc>https://oteologo.com.br/login</loc><lastmod>2025-06-18</lastmod><priority>0.5</priority></url>
+    <url><loc>https://oteologo.com.br/logout</loc><lastmod>2025-06-18</lastmod><priority>0.5</priority></url>
 
     <!-- Página de estudos -->
     <url><loc>https://oteologo.com.br/estudos/estudos-teologicos.html</loc><lastmod>2025-06-18</lastmod><priority>0.9</priority></url>
@@ -32,7 +33,7 @@
     <url><loc>https://oteologo.com.br/estudos/teologia/soteriologia.html</loc><lastmod>2025-06-18</lastmod><priority>0.8</priority></url>
     <url><loc>https://oteologo.com.br/estudos/teologia/trindade.html</loc><lastmod>2025-06-18</lastmod><priority>0.8</priority></url>
 
-    <!-- Defesa -->
+    <!-- Defesa da Fé -->
     <url><loc>https://oteologo.com.br/estudos/defesa/ateismo.html</loc><lastmod>2025-06-18</lastmod><priority>0.7</priority></url>
     <url><loc>https://oteologo.com.br/estudos/defesa/defesa-da-fe.html</loc><lastmod>2025-06-18</lastmod><priority>0.8</priority></url>
     <url><loc>https://oteologo.com.br/estudos/defesa/heresias.html</loc><lastmod>2025-06-18</lastmod><priority>0.8</priority></url>
