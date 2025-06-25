@@ -3,28 +3,27 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
+    <link rel="stylesheet" href="styles.css" />
     <title>Debate ao Vivo – Participe da Sala de Chat em O Teólogo</title>
 
-    <!-- Meta Description para Google -->
+    <!-- SEO & Meta -->
     <meta name="description" content="Cadastre-se gratuitamente na plataforma O Teólogo e participe de salas de debate bíblico, estudos teológicos e uma comunidade cristã ativa.">
-
-    <!-- Robôs e indexação -->
     <meta name="robots" content="index, follow">
     <meta name="author" content="O Teólogo">
-
-    <!-- Open Graph (Facebook, LinkedIn) -->
     <meta property="og:title" content="Cadastre-se no O Teólogo – Participe de Debates Bíblicos e Estudos Teológicos">
     <meta property="og:description" content="Junte-se à maior comunidade cristã online para debater a Bíblia, crescer na fé e estudar teologia com irmãos de todo o Brasil.">
     <meta property="og:image" content="https://oteologo.com.br/img/logoTeologo.png">
     <meta property="og:url" content="https://oteologo.com.br/auth">
     <meta property="og:type" content="website">
-
-    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="O Teólogo – Plataforma Cristã de Estudos e Comunhão">
     <meta name="twitter:description" content="Cadastre-se e participe de debates teológicos, estudos bíblicos e uma comunidade cristã acolhedora.">
     <meta name="twitter:image" content="https://oteologo.com.br/img/logoTeologo.png">
+    <link rel="icon" type="image/png" href="/img/favicon.png" />
+    <link rel="shortcut icon" href="/favicon.ico" />
 
+    <!-- Schema -->
     <script type="application/ld+json">
         {
             "@context": "https://schema.org",
@@ -35,19 +34,12 @@
         }
     </script>
 
-
-    <!-- Favicon padrão -->
-    <link rel="icon" type="image/png" href="/img/favicon.png" />
-    <link rel="shortcut icon" href="/favicon.ico" />
-
-    <link rel="stylesheet" href="styles.css" />
-    <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
     <style>
         main {
             max-width: 800px;
             margin: 2rem auto;
             padding: 1.5rem;
-            background-color: #ffffff;
+            background-color: #fff;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
@@ -95,15 +87,9 @@
             font-size: 1rem;
             cursor: pointer;
         }
-        button.btn:hover {
-            background-color: #0056b3;
-        }
-        #btn-sair {
-            background: #e44d26;
-        }
-        #btn-sair:hover {
-            background: #b63617;
-        }
+        button.btn:hover { background-color: #0056b3; }
+        #btn-sair { background: #e44d26; }
+        #btn-sair:hover { background: #b63617; }
         emoji-picker {
             position: absolute;
             z-index: 10;
@@ -124,6 +110,36 @@
             border-radius: 8px;
             margin: 0 2px;
             display: inline-block;
+        }
+        .mensagem {
+            margin-bottom: 0.8em;
+        }
+        .avatar {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .editar-btn, .apagar-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            margin-left: 6px;
+            font-size: 0.95em;
+        }
+        .editar-btn:hover, .apagar-btn:hover {
+            color: red;
+        }
+        #sugestoes {
+            position: absolute;
+            z-index: 15;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 0.5rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            display: none;
         }
         #modal-sair {
             position: fixed;
@@ -155,13 +171,8 @@
             border: none;
             cursor: pointer;
         }
-        #modal-confirm {
-            background-color: #007BFF;
-            color: white;
-        }
-        #modal-cancel {
-            background-color: #ccc;
-        }
+        #modal-confirm { background-color: #007BFF; color: white; }
+        #modal-cancel { background-color: #ccc; }
         footer {
             text-align: center;
             margin-top: 2rem;
@@ -169,9 +180,7 @@
             background: #003366;
             color: #fff;
         }
-        footer a {
-            color: inherit;
-        }
+        footer a { color: inherit; }
     </style>
 </head>
 <body>
@@ -208,42 +217,6 @@
 <script src="/socket.io/socket.io.js"></script>
 <script src="chat.js"></script>
 <script>
-    const emojiToggle = document.getElementById('emoji-toggle');
-    const emojiPicker = document.getElementById('emoji-picker');
-    const msgInput = document.getElementById("msg");
-
-    emojiToggle.addEventListener('click', () => {
-        emojiPicker.style.display = emojiPicker.style.display === "block" ? "none" : "block";
-    });
-
-    emojiPicker.addEventListener('emoji-click', (event) => {
-        msgInput.value += event.detail.unicode;
-        emojiPicker.style.display = "none";
-        msgInput.focus();
-    });
-
-    document.addEventListener('click', (e) => {
-        if (!emojiPicker.contains(e.target) && e.target !== emojiToggle) {
-            emojiPicker.style.display = "none";
-        }
-    });
-
-    const btnSair = document.getElementById('btn-sair');
-    const modalSair = document.getElementById('modal-sair');
-    const modalConfirm = document.getElementById('modal-confirm');
-    const modalCancel = document.getElementById('modal-cancel');
-
-    btnSair.addEventListener('click', () => {
-        modalSair.style.display = 'flex';
-    });
-
-    modalCancel.addEventListener('click', () => {
-        modalSair.style.display = 'none';
-    });
-
-</script>
-
-<script>
     document.addEventListener('DOMContentLoaded', () => {
         const apelidoStorage = localStorage.getItem('apelido');
         if (apelidoStorage) {
@@ -253,7 +226,6 @@
         }
     });
 </script>
-
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-4TV9KF3766"></script>
 <script>
     window.dataLayer = window.dataLayer || [];

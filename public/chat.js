@@ -21,8 +21,7 @@ socket.on("usuariosNaSala", (lista) => {
   if (Array.isArray(lista)) {
     usuariosOnline = lista;
   } else if (typeof lista === 'object') {
-    const salaAtual = sala;
-    usuariosOnline = lista[salaAtual] || [];
+    usuariosOnline = lista[sala] || [];
   } else {
     usuariosOnline = [];
   }
@@ -38,6 +37,28 @@ socket.on("mensagem", (data) => {
   exibirMensagem(data);
 });
 
+socket.on("mensagemEditada", (data) => {
+  const div = document.getElementById(`msg-${data.id}`);
+  if (div) {
+    const span = div.querySelector(".texto");
+    if (span) {
+      const partes = data.mensagem.split(/(\s+)/).map(part => {
+        if (part.startsWith('@')) {
+          const nome = part.slice(1);
+          return `<span class="mention">${nome}</span>`;
+        }
+        return part;
+      });
+      span.innerHTML = `${partes.join('')} <em>(editada)</em>`;
+    }
+  }
+});
+
+socket.on("mensagemApagada", (data) => {
+  const div = document.getElementById(`msg-${data.id}`);
+  if (div) div.remove();
+});
+
 document.getElementById("form-msg").addEventListener("submit", (e) => {
   e.preventDefault();
   const input = document.getElementById("msg");
@@ -51,10 +72,11 @@ document.getElementById("form-msg").addEventListener("submit", (e) => {
 
 function exibirMensagem(data) {
   const chat = document.getElementById("chat-box");
-  if (!chat) return;
+  if (!chat || !data.id) return;
 
   const div = document.createElement("div");
-  div.className = "mensagem";
+  div.classList.add("mensagem");
+  div.id = `msg-${data.id}`;
 
   const apelidoAtual = localStorage.getItem("apelidoSimplificado");
   const destinatario = data.destinatario?.toLowerCase().trim();
@@ -79,11 +101,38 @@ function exibirMensagem(data) {
       ? `<img src="${avatar}" class="avatar"> <span>${nome}</span>`
       : nome;
 
-  div.innerHTML = `<strong>${icone}${nomeHTML}:</strong> ${partes.join('')}`;
+  div.innerHTML = `<strong>${icone}${nomeHTML}:</strong> <span class="texto">${partes.join('')}</span>`;
+
+  if (data.usuario === localStorage.getItem("apelido")) {
+    const editarBtn = document.createElement("button");
+    editarBtn.textContent = "✏️";
+    editarBtn.className = "editar-btn";
+    editarBtn.title = "Editar";
+    editarBtn.onclick = () => {
+      const novaMensagem = prompt("Editar mensagem:", data.mensagem);
+      if (novaMensagem) {
+        socket.emit("editarMensagem", { sala, id: data.id, novaMensagem });
+      }
+    };
+    div.appendChild(editarBtn);
+
+    const apagarBtn = document.createElement("button");
+    apagarBtn.textContent = "🗑️";
+    apagarBtn.className = "apagar-btn";
+    apagarBtn.title = "Apagar";
+    apagarBtn.onclick = () => {
+      if (confirm("Deseja apagar esta mensagem?")) {
+        socket.emit("apagarMensagem", { sala, id: data.id });
+      }
+    };
+    div.appendChild(apagarBtn);
+  }
+
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
 }
 
+// Autocompletar menções
 const inputMensagem = document.getElementById("msg");
 const sugestoesBox = document.getElementById("sugestoes");
 
@@ -180,6 +229,29 @@ function inserirApelido(apelido) {
   inputMensagem.value = valorAtual.slice(0, indexArroba + 1) + apelido + " ";
   inputMensagem.focus();
   ocultarSugestoes();
+}
+
+// Integração com o emoji-picker
+const emojiToggle = document.getElementById('emoji-toggle');
+const emojiPicker = document.getElementById('emoji-picker');
+
+if (emojiToggle && emojiPicker) {
+  emojiToggle.addEventListener('click', () => {
+    emojiPicker.style.display = emojiPicker.style.display === "block" ? "none" : "block";
+  });
+
+  emojiPicker.addEventListener('emoji-click', (event) => {
+    const emoji = event.detail.unicode;
+    inputMensagem.value += emoji;
+    emojiPicker.style.display = "none";
+    inputMensagem.focus();
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!emojiPicker.contains(e.target) && e.target !== emojiToggle) {
+      emojiPicker.style.display = "none";
+    }
+  });
 }
 
 // Sair da sala com confirmação

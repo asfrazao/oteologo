@@ -60,7 +60,9 @@ io.on('connection', (socket) => {
 
     if (!salas[sala]) salas[sala] = [];
 
+    const id = Date.now() + Math.random().toString(36).substr(2, 5);
     const msgEntrada = {
+      id,
       usuario: 'O Teólogo disse',
       mensagem: `${usuario} entrou na sala.`,
       avatar: ''
@@ -110,7 +112,8 @@ io.on('connection', (socket) => {
       const destinatario = match ? match[1] : null;
       const avatar = usuarioPorSocket[socket.id]?.avatar || '';
 
-      const msgObj = { usuario, mensagem: texto, avatar };
+      const id = Date.now() + Math.random().toString(36).substr(2, 5);
+      const msgObj = { id, usuario, mensagem: texto, avatar };
       if (destinatario) msgObj.destinatario = destinatario;
 
       registrarMensagem(sala, msgObj);
@@ -118,6 +121,37 @@ io.on('connection', (socket) => {
       console.log(`💬 ${usuario} em ${sala}: "${texto}"`);
     }
   });
+
+  socket.on('editarMensagem', ({ sala, id, novaMensagem }) => {
+    if (!historicoPorSala[sala]) return;
+    const usuario = usuarioPorSocket[socket.id]?.usuario;
+
+    const msg = historicoPorSala[sala].find(m => m.id === id && m.usuario === usuario);
+    if (msg) {
+      msg.mensagem = novaMensagem.slice(0, 256);
+
+      const indexSala = salas[sala]?.findIndex(m => m.id === id && m.usuario === usuario);
+      if (indexSala !== -1) salas[sala][indexSala].mensagem = msg.mensagem;
+
+      io.to(sala).emit('mensagemEditada', msg);
+    }
+  });
+
+  socket.on('apagarMensagem', ({ sala, id }) => {
+    if (!historicoPorSala[sala]) return;
+    const usuario = usuarioPorSocket[socket.id]?.usuario;
+
+    const index = historicoPorSala[sala].findIndex(m => m.id === id && m.usuario === usuario);
+    if (index !== -1) {
+      const apagada = historicoPorSala[sala].splice(index, 1)[0];
+
+      const indexSala = salas[sala]?.findIndex(m => m.id === id && m.usuario === usuario);
+      if (indexSala !== -1) salas[sala].splice(indexSala, 1);
+
+      io.to(sala).emit('mensagemApagada', apagada);
+    }
+  });
+
 
   socket.on('disconnecting', () => {
     const infos = usuarioPorSocket[socket.id];
