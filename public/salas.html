@@ -154,7 +154,9 @@
     'Presbiterianos','Batistas','Testemunhas da Jeova','Mórmons'
   ];
 
-  socket.on("usuariosNaSala", (mapaDeSalas) => {
+  let timeoutAtualizacaoSalas = null;
+
+  function atualizarSalasFixas(mapaDeSalas) {
     const select = document.getElementById("selectSalasFixas");
     select.innerHTML = '';
     for (const nomeSala of salasFixas) {
@@ -164,7 +166,15 @@
       option.textContent = `${nomeSala} (${total} participante${total === 1 ? '' : 's'})`;
       select.appendChild(option);
     }
+  }
+
+  socket.on("usuariosNaSala", (mapaDeSalas) => {
+    if (timeoutAtualizacaoSalas) clearTimeout(timeoutAtualizacaoSalas);
+    timeoutAtualizacaoSalas = setTimeout(() => {
+      atualizarSalasFixas(mapaDeSalas);
+    }, 300); // atraso de 300ms para evitar spam visual
   });
+
 
   async function atualizarSalasUsuario() {
     const select = document.getElementById('selectSalasUsuario');

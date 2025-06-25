@@ -52,16 +52,14 @@ app.get('/chat', (req, res) => res.sendFile(path.join(__dirname, 'public/chat.ht
 
 // Socket.IO
 io.on('connection', (socket) => {
-  // 🔄 Emite o mapa de usuários por sala imediatamente ao conectar
   socket.emit("usuariosNaSala", gerarMapaDeSalas());
 
   socket.on('entrar', ({ sala, usuario, avatar }) => {
     socket.join(sala);
     usuarioPorSocket[socket.id] = { usuario, sala, avatar };
 
-    if (!salas[sala]) {
-      salas[sala] = [];
-    }
+    if (!salas[sala]) salas[sala] = [];
+
     const msgEntrada = {
       usuario: 'O Teólogo disse',
       mensagem: `${usuario} entrou na sala.`,
@@ -70,19 +68,20 @@ io.on('connection', (socket) => {
     registrarMensagem(sala, msgEntrada);
     io.to(sala).emit('mensagem', msgEntrada);
 
-    if (!usuariosPorSala[sala]) {
-      usuariosPorSala[sala] = [];
-    }
+    if (!usuariosPorSala[sala]) usuariosPorSala[sala] = [];
 
     if (!usuariosPorSala[sala].includes(usuario)) {
       usuariosPorSala[sala].push(usuario);
     }
 
-    // Envia histórico da sala
+    // Histórico da sala
     socket.emit('historico', salas[sala]);
 
-    // Atualiza lista de usuários para todos
+    // Atualiza lista da sala local
     io.to(sala).emit('usuariosNaSala', usuariosPorSala[sala]);
+
+    // ✅ Atualiza a tela principal (salas fixas)
+    emitirTodosUsuariosPorSala();
   });
 
   socket.on('mensagem', (data) => {
@@ -90,7 +89,7 @@ io.on('connection', (socket) => {
     if (sala && usuario && mensagem) {
       if (checkMessageFrequency(sala, usuario, mensagem)) {
         socket.emit('mensagem', {
-          usuario: 'O Teólogo',
+          usuario: 'O Teólogo disse ao ' + usuario,
           mensagem: 'Você está enviando mensagens muito repetidas. Por favor, aguarde.'
         });
         console.warn(`🚫 [FLOOD] "${usuario}" na sala "${sala}" bloqueado por repetição.`);
@@ -107,19 +106,11 @@ io.on('connection', (socket) => {
       }
 
       texto = texto.slice(0, 256);
-
-      // 🔍 Verifica se há @menção
       const match = texto.match(/@(\w{2,})/);
       const destinatario = match ? match[1] : null;
-
       const avatar = usuarioPorSocket[socket.id]?.avatar || '';
 
-      const msgObj = {
-        usuario,
-        mensagem: texto,
-        avatar
-      };
-
+      const msgObj = { usuario, mensagem: texto, avatar };
       if (destinatario) msgObj.destinatario = destinatario;
 
       registrarMensagem(sala, msgObj);
@@ -128,25 +119,21 @@ io.on('connection', (socket) => {
     }
   });
 
-
-
   socket.on('disconnecting', () => {
     const infos = usuarioPorSocket[socket.id];
     if (infos) {
       const { usuario, sala } = infos;
-/*      const msgSaida = { usuario: 'O Teólogo disse', mensagem: `${usuario} saiu da sala.`, avatar: '' };
-      registrarMensagem(sala, msgSaida);
-      socket.to(sala).emit('mensagem', msgSaida);*/
       console.log(`🚪 ${usuario} saiu da sala ${sala}`);
+
+      // ✅ Atualiza mapa geral ao desconectar
+      emitirTodosUsuariosPorSala();
     }
   });
 
   socket.on('disconnect', () => {
     delete usuarioPorSocket[socket.id];
-    emitirTodosUsuariosPorSala();
     console.log('🔴 Usuário desconectado');
   });
-
 
 });
 
