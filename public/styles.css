@@ -400,3 +400,9 @@ button:hover {
 .btn-google:hover {
   background-color: #0056b3;
 }
+
+.header-logo img {
+  height: 150px;
+  vertical-align: middle;
+  margin-right: 10px;
+}
