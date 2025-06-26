@@ -20,7 +20,8 @@ const {
   adicionarUsuario,
   removerUsuario,
   criarSala,
-  salas
+  salas,
+  gerarIdSala
 } = require('./utils/salaManager');
 
 console.log('[SERVER] Iniciando aplicação...');
@@ -64,19 +65,16 @@ io.on('connection', (socket) => {
     registrarMensagem(sala, msgEntrada);
 
     adicionarUsuario(sala, socket.id, usuario);
-    monitorarInatividadePorSala(io, sala);
+    monitorarInatividadePorSala.iniciar(gerarIdSala(sala));
 
-    // Emite o histórico completo após registrar a entrada
     const historico = historicoPorSala[sala] || [];
     const historicoFiltrado = historico.filter(m => !m.mensagem.includes(`${usuario} entrou na sala.`));
     socket.emit('historico', historicoFiltrado);
 
-    io.to(sala).emit('mensagem', msgEntrada); // Agora funciona para todos da sala
-
+    io.to(sala).emit('mensagem', msgEntrada);
     console.log(`👤 ${usuario} entrou na sala ${sala}`);
     emitirTodosUsuariosPorSala();
   });
-
 
   socket.on('mensagem', (data) => {
     const { sala, usuario, mensagem } = data;
@@ -102,9 +100,6 @@ io.on('connection', (socket) => {
       texto = texto.slice(0, 256);
       const match = texto.match(/@(\w{2,})/);
       const destinatario = match ? match[1] : null;
-      const avatar = usuarioPorSocket[socket.id]?.avatar || '';
-
-      const id = Date.now() + Math.random().toString(36).substr(2, 5);
 
       const msgObj = {
         id: Date.now() + Math.random().toString(36).substr(2, 5),
@@ -114,10 +109,9 @@ io.on('connection', (socket) => {
       };
       if (destinatario) msgObj.destinatario = destinatario;
 
-
       registrarMensagem(sala, msgObj);
       io.to(sala).emit('mensagem', msgObj);
-      monitorarInatividadePorSala(io, sala);
+      monitorarInatividadePorSala.iniciar(gerarIdSala(sala));
       console.log(`💬 ${usuario} em ${sala}: "${texto}"`);
     }
   });
@@ -137,12 +131,10 @@ io.on('connection', (socket) => {
     if (!mensagens) return;
     const index = mensagens.findIndex(m => m.id === id);
     if (index !== -1 && mensagens[index].usuario === usuarioPorSocket[socket.id]?.usuario) {
-      const [removida] = mensagens.splice(index, 1);
+      mensagens.splice(index, 1);
       io.to(sala).emit("mensagemApagada", { id });
     }
   });
-
-
 
   socket.on('disconnecting', () => {
     const infos = usuarioPorSocket[socket.id];
@@ -151,7 +143,7 @@ io.on('connection', (socket) => {
 
       const msgSaida = { usuario: 'O Teólogo disse', mensagem: `${usuario} saiu da sala.` };
       registrarMensagem(sala, msgSaida);
-      io.to(sala).emit('mensagem', msgSaida); // <-- Mensagem de saída mantida
+      io.to(sala).emit('mensagem', msgSaida);
 
       console.log(`🚪 ${usuario} saiu da sala ${sala}`);
       emitirTodosUsuariosPorSala();
@@ -165,6 +157,7 @@ io.on('connection', (socket) => {
   });
 });
 
+// Funções auxiliares
 function registrarMensagem(sala, msgObj) {
   if (!historicoPorSala[sala]) historicoPorSala[sala] = [];
 
@@ -177,7 +170,6 @@ function registrarMensagem(sala, msgObj) {
     historicoPorSala[sala] = historicoPorSala[sala].slice(-50);
   }
 }
-
 
 function emitirTodosUsuariosPorSala() {
   io.emit("usuariosNaSala", gerarMapaDeSalas());
@@ -207,7 +199,10 @@ process.on('unhandledRejection', (reason) => {
   console.error('❗ Promessa rejeitada:', reason);
 });
 
-// Bots (se habilitado no .env)
+// Expor o io para uso externo (como em salaManager.js)
+module.exports.getIO = () => io;
+
+// Bots
 if (process.env.ENABLE_BOTS === "true") {
   const { spawn } = require("child_process");
   const botPath = path.join(__dirname, "bots", "bots.js");
@@ -215,7 +210,6 @@ if (process.env.ENABLE_BOTS === "true") {
 }
 app.use("/api/bots", require("./routes/bots"));
 
-// Rota de configuração dos bots
 const botsConfig = {
   intervalMin: parseInt(process.env.BOTS_INTERVAL_RANGE?.split(",")[0]) || 20000,
   intervalMax: parseInt(process.env.BOTS_INTERVAL_RANGE?.split(",")[1]) || 30000,
