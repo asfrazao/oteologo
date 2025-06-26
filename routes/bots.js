@@ -46,3 +46,16 @@ router.post("/configurar", (req, res) => {
 });
 
 module.exports = router;
+
+// Retorna o intervalo atual dos bots (dinamicamente)
+router.get("/intervalo", (req, res) => {
+    const range = process.env.BOTS_INTERVAL_RANGE || "20000,30000";
+    const [minStr, maxStr] = range.split(",");
+    const min = parseInt(minStr.trim()) || 20000;
+    const max = parseInt(maxStr.trim()) || 30000;
+
+    res.json({
+        intervalo: `${min},${max}`,
+        msg: "Intervalo atual dos bots recuperado com sucesso."
+    });
+});

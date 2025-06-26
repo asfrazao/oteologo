@@ -7,23 +7,10 @@ const SALAS_FIXAS = [
     'Presbiterianos','Batistas','Testemunhas da Jeova','Mórmons'
 ];
 
-// Leitura das variáveis de ambiente
 const POSSIVEIS_NUM_BOTS = (process.env.NUMBER_BOTS || "0")
     .split(",")
     .map(n => parseInt(n.trim()))
     .filter(n => !isNaN(n) && n >= 0);
-
-const INTERVAL_RANGE = (process.env.BOTS_INTERVAL_RANGE || "20000,30000")
-    .split(",")
-    .map(n => parseInt(n.trim()));
-const MIN_INTERVAL = INTERVAL_RANGE[0] || 20000;
-const MAX_INTERVAL = INTERVAL_RANGE[1] || 30000;
-
-// Verificação básica
-if (POSSIVEIS_NUM_BOTS.length === 0) {
-    console.log("[BOTS] Nenhum valor válido encontrado em NUMBER_BOTS");
-    process.exit(0);
-}
 
 const NOMES_BOTS = [
     "Gabriel", "Ana", "Rafael", "Sara", "João", "Débora", "Miguel", "Ester", "Lucas", "Priscila",
@@ -41,9 +28,9 @@ const FRASES_TEMAS = [
     "A Palavra é viva e eficaz!",
     "Evangelizar é um chamado de todos nós.",
     "Cristo em vós, a esperança da glória.",
-    "Quem sabe argumentar, somente com a biblia?",
+    "Quem sabe argumentar, somente com a bíblia?",
     "Estou gostando de debater esses assuntos",
-    "Vi que na sessão de estudos teologicos do site tem muito material legal, também!!",
+    "Vi que na sessão de estudos teológicos do site tem muito material legal, também!!",
     "Ajudei a iniciativa com R$ 10,00 e ganhei um livro da hora!!",
     "Gostei demais da iniciativa, ajudei com R$ 5,00, nem pesa no bolso",
     "Já mandei umas sugestões de melhoria no fale conosco deles",
@@ -93,14 +80,21 @@ const FRASES_TEMAS = [
     "Jesus é o caminho, e toda discussão deve levar a Ele."
 ];
 
-//adicionar icones nos bots
-function gerarNomeUnico(base, indice, sala) {
+function gerarNomeUnico(base) {
     return `* ${base} `;
+}
+
+function lerIntervaloDinamicamente() {
+    const intervaloStr = process.env.BOTS_INTERVAL_RANGE || "20000,30000";
+    const [minStr, maxStr] = intervaloStr.split(",").map(n => parseInt(n.trim()));
+    const min = !isNaN(minStr) ? minStr : 20000;
+    const max = !isNaN(maxStr) ? maxStr : 30000;
+    return Math.floor(Math.random() * (max - min)) + min;
 }
 
 function enviarMensagens(socket, sala, nomeBot) {
     function enviar() {
-        const intervalo = MIN_INTERVAL + Math.floor(Math.random() * (MAX_INTERVAL - MIN_INTERVAL));
+        const intervalo = lerIntervaloDinamicamente();
         setTimeout(() => {
             const frase = FRASES_TEMAS[Math.floor(Math.random() * FRASES_TEMAS.length)];
             socket.emit("mensagem", {
@@ -108,7 +102,7 @@ function enviarMensagens(socket, sala, nomeBot) {
                 usuario: nomeBot,
                 mensagem: frase
             });
-            enviar(); // Recursivamente agenda a próxima
+            enviar();
         }, intervalo);
     }
     enviar();
@@ -136,12 +130,12 @@ function iniciarBot(nomeBot, sala) {
     });
 }
 
-// Inicializa os bots em cada sala fixa com quantidade aleatória
+// Inicializa os bots em cada sala fixa
 for (const sala of SALAS_FIXAS) {
     const qtdBots = POSSIVEIS_NUM_BOTS[Math.floor(Math.random() * POSSIVEIS_NUM_BOTS.length)];
     for (let i = 0; i < qtdBots; i++) {
         const baseNome = NOMES_BOTS[(i + sala.length) % NOMES_BOTS.length];
-        const nomeBot = gerarNomeUnico(baseNome, i, sala);
+        const nomeBot = gerarNomeUnico(baseNome);
         iniciarBot(nomeBot, sala);
     }
 }
