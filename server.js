@@ -12,12 +12,16 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-
 const historicoPorSala = {};
 const usuarioPorSocket = {};
-const salas = {}; // ✅ Adicionando isso corrige o erro!
-const usuariosPorSala = {}; // ✅ Também necessário, pois você usa isso no socket.on('entrar')
 
+const {
+  monitorarInatividadePorSala,
+  adicionarUsuario,
+  removerUsuario,
+  criarSala,
+  salas
+} = require('./utils/salaManager');
 
 console.log('[SERVER] Iniciando aplicação...');
 
@@ -37,8 +41,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/salas', require('./routes/salas'));
 app.use('/api/google-login', require('./routes/googleLogin'));
-//app.use('/api/auth', require('./routes/authLogin'));
-
 
 // Rotas HTML
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public/index.html')));
@@ -58,33 +60,23 @@ io.on('connection', (socket) => {
     socket.join(sala);
     usuarioPorSocket[socket.id] = { usuario, sala, avatar };
 
-    if (!salas[sala]) salas[sala] = [];
-
-    const id = Date.now() + Math.random().toString(36).substr(2, 5);
-    const msgEntrada = {
-      id,
-      usuario: 'O Teólogo disse',
-      mensagem: `${usuario} entrou na sala.`,
-      avatar: ''
-    };
+    const msgEntrada = { usuario: 'O Teólogo disse', mensagem: `${usuario} entrou na sala.` };
     registrarMensagem(sala, msgEntrada);
-    io.to(sala).emit('mensagem', msgEntrada);
 
-    if (!usuariosPorSala[sala]) usuariosPorSala[sala] = [];
+    adicionarUsuario(sala, socket.id, usuario);
+    monitorarInatividadePorSala(io, sala);
 
-    if (!usuariosPorSala[sala].includes(usuario)) {
-      usuariosPorSala[sala].push(usuario);
-    }
+    // Emite o histórico completo após registrar a entrada
+    const historico = historicoPorSala[sala] || [];
+    const historicoFiltrado = historico.filter(m => !m.mensagem.includes(`${usuario} entrou na sala.`));
+    socket.emit('historico', historicoFiltrado);
 
-    // Histórico da sala
-    socket.emit('historico', salas[sala]);
+    io.to(sala).emit('mensagem', msgEntrada); // Agora funciona para todos da sala
 
-    // Atualiza lista da sala local
-    io.to(sala).emit('usuariosNaSala', usuariosPorSala[sala]);
-
-    // ✅ Atualiza a tela principal (salas fixas)
+    console.log(`👤 ${usuario} entrou na sala ${sala}`);
     emitirTodosUsuariosPorSala();
   });
+
 
   socket.on('mensagem', (data) => {
     const { sala, usuario, mensagem } = data;
@@ -113,71 +105,79 @@ io.on('connection', (socket) => {
       const avatar = usuarioPorSocket[socket.id]?.avatar || '';
 
       const id = Date.now() + Math.random().toString(36).substr(2, 5);
-      const msgObj = { id, usuario, mensagem: texto, avatar };
+
+      const msgObj = {
+        id: Date.now() + Math.random().toString(36).substr(2, 5),
+        usuario,
+        mensagem: texto,
+        avatar: usuarioPorSocket[socket.id]?.avatar || ""
+      };
       if (destinatario) msgObj.destinatario = destinatario;
+
 
       registrarMensagem(sala, msgObj);
       io.to(sala).emit('mensagem', msgObj);
+      monitorarInatividadePorSala(io, sala);
       console.log(`💬 ${usuario} em ${sala}: "${texto}"`);
     }
   });
 
-  socket.on('editarMensagem', ({ sala, id, novaMensagem }) => {
-    if (!historicoPorSala[sala]) return;
-    const usuario = usuarioPorSocket[socket.id]?.usuario;
-
-    const msg = historicoPorSala[sala].find(m => m.id === id && m.usuario === usuario);
-    if (msg) {
-      msg.mensagem = novaMensagem.slice(0, 256);
-
-      const indexSala = salas[sala]?.findIndex(m => m.id === id && m.usuario === usuario);
-      if (indexSala !== -1) salas[sala][indexSala].mensagem = msg.mensagem;
-
-      io.to(sala).emit('mensagemEditada', msg);
+  socket.on("editarMensagem", ({ sala, id, novaMensagem }) => {
+    const mensagens = historicoPorSala[sala];
+    if (!mensagens) return;
+    const msg = mensagens.find(m => m.id === id);
+    if (msg && msg.usuario === usuarioPorSocket[socket.id]?.usuario) {
+      msg.mensagem = novaMensagem;
+      io.to(sala).emit("mensagem", msg);
     }
   });
 
-  socket.on('apagarMensagem', ({ sala, id }) => {
-    if (!historicoPorSala[sala]) return;
-    const usuario = usuarioPorSocket[socket.id]?.usuario;
-
-    const index = historicoPorSala[sala].findIndex(m => m.id === id && m.usuario === usuario);
-    if (index !== -1) {
-      const apagada = historicoPorSala[sala].splice(index, 1)[0];
-
-      const indexSala = salas[sala]?.findIndex(m => m.id === id && m.usuario === usuario);
-      if (indexSala !== -1) salas[sala].splice(indexSala, 1);
-
-      io.to(sala).emit('mensagemApagada', apagada);
+  socket.on("apagarMensagem", ({ sala, id }) => {
+    const mensagens = historicoPorSala[sala];
+    if (!mensagens) return;
+    const index = mensagens.findIndex(m => m.id === id);
+    if (index !== -1 && mensagens[index].usuario === usuarioPorSocket[socket.id]?.usuario) {
+      const [removida] = mensagens.splice(index, 1);
+      io.to(sala).emit("mensagemApagada", { id });
     }
   });
+
 
 
   socket.on('disconnecting', () => {
     const infos = usuarioPorSocket[socket.id];
     if (infos) {
       const { usuario, sala } = infos;
-      console.log(`🚪 ${usuario} saiu da sala ${sala}`);
 
-      // ✅ Atualiza mapa geral ao desconectar
+      const msgSaida = { usuario: 'O Teólogo disse', mensagem: `${usuario} saiu da sala.` };
+      registrarMensagem(sala, msgSaida);
+      io.to(sala).emit('mensagem', msgSaida); // <-- Mensagem de saída mantida
+
+      console.log(`🚪 ${usuario} saiu da sala ${sala}`);
       emitirTodosUsuariosPorSala();
     }
   });
 
   socket.on('disconnect', () => {
     delete usuarioPorSocket[socket.id];
+    removerUsuario(socket.id);
     console.log('🔴 Usuário desconectado');
   });
-
 });
 
 function registrarMensagem(sala, msgObj) {
   if (!historicoPorSala[sala]) historicoPorSala[sala] = [];
+
+  if (!msgObj.id) {
+    msgObj.id = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+  }
+
   historicoPorSala[sala].push(msgObj);
-  if (historicoPorSala[sala].length > 5) {
-    historicoPorSala[sala] = historicoPorSala[sala].slice(-5);
+  if (historicoPorSala[sala].length > 50) {
+    historicoPorSala[sala] = historicoPorSala[sala].slice(-50);
   }
 }
+
 
 function emitirTodosUsuariosPorSala() {
   io.emit("usuariosNaSala", gerarMapaDeSalas());
@@ -211,7 +211,7 @@ process.on('unhandledRejection', (reason) => {
 if (process.env.ENABLE_BOTS === "true") {
   const { spawn } = require("child_process");
   const botPath = path.join(__dirname, "bots", "bots.js");
-  const botProcess = spawn(`node "${botPath}"`, { stdio: "inherit", shell: true });
+  spawn(`node "${botPath}"`, { stdio: "inherit", shell: true });
 }
 app.use("/api/bots", require("./routes/bots"));
 
@@ -222,9 +222,7 @@ const botsConfig = {
 };
 
 app.get('/api/bots/intervalo', (req, res) => {
-  res.json({
-    intervalo: `${botsConfig.intervalMin},${botsConfig.intervalMax}`
-  });
+  res.json({ intervalo: `${botsConfig.intervalMin},${botsConfig.intervalMax}` });
 });
 
 app.post('/api/bots/intervalo', (req, res) => {

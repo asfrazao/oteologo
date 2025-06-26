@@ -1,6 +1,6 @@
-
 // utils/salaManager.js
 const salas = {};
+const inatividadePorSala = {};
 
 function criarSala(nome, personalizada = false) {
   const id = nome.toLowerCase().replace(/\s+/g, '-');
@@ -35,16 +35,47 @@ function removerUsuario(socketId) {
 }
 
 function removerSalasExpiradas(io) {
-  const agora = Date.now();
-  for (const sala in salas) {
-    if (salas[sala].personalizada && agora - salas[sala].criacao > 3600000) {
-      salas[sala].usuarios.forEach(u => {
-        io.to(sala).emit('mensagem', `⏳ Sala expirou. ${u.nome} foi desconectado.`);
-        io.sockets.sockets.get(u.id)?.leave(sala);
-      });
-      delete salas[sala];
+  for (const salaId in salas) {
+    const sala = salas[salaId];
+    if (sala.personalizada && sala.usuarios.length === 0) {
+      delete salas[salaId];
+      delete inatividadePorSala[salaId];
     }
   }
+}
+
+function monitorarInatividadePorSala(io, salaId) {
+  if (inatividadePorSala[salaId]) {
+    clearTimeout(inatividadePorSala[salaId].tempoAlerta);
+    clearTimeout(inatividadePorSala[salaId].tempoFinal);
+  }
+
+  // Após 1 hora de inatividade, envia alerta
+  inatividadePorSala[salaId] = {
+    tempoAlerta: setTimeout(() => {
+      io.to(salaId).emit('mensagem', {
+        usuario: 'O Teólogo',
+        mensagem: 'O Teólogo diz: Tem alguém aí?'
+      });
+
+      // Após mais 30 minutos sem resposta, remove sala e usuários
+      inatividadePorSala[salaId].tempoFinal = setTimeout(() => {
+        const sala = salas[salaId];
+        if (sala && sala.usuarios.length > 0) {
+          sala.usuarios.forEach(u => {
+            io.to(salaId).emit('mensagem', {
+              usuario: 'O Teólogo',
+              mensagem: `${u.nome} foi removido por inatividade.`
+            });
+            io.sockets.sockets.get(u.id)?.leave(salaId);
+          });
+        }
+        delete salas[salaId];
+        delete inatividadePorSala[salaId];
+      }, 30 * 60 * 1000); // 30 minutos
+
+    }, 60 * 60 * 1000) // 1 hora
+  };
 }
 
 module.exports = {
@@ -53,5 +84,6 @@ module.exports = {
   adicionarUsuario,
   removerUsuario,
   removerSalasExpiradas,
+  monitorarInatividadePorSala,
   salas
 };

@@ -406,3 +406,18 @@ button:hover {
   vertical-align: middle;
   margin-right: 10px;
 }
+
+.entrada em {
+  color: blue;
+  font-style: italic;
+}
+
+.saida em {
+  color: red;
+  font-style: italic;
+}
+
+.sistema em {
+  color: gray;
+  font-style: italic;
+}
