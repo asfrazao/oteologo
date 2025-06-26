@@ -118,16 +118,10 @@
             color: #003366;
         }
 
-/*        #google-login-btn > div {
-            width: 100% !important;
-            display: flex !important;
-            justify-content: center !important;
-        }
-
-        #google-login-btn iframe {
-            width: 100% !important;
-            height: 42px !important;
-            border-radius: 8px !important;
+/*        #google-login-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
         }*/
 
     </style>
@@ -165,7 +159,8 @@
     </div>
     <button class="btn-cadastrar" id="cadastrar-btn">Cadastrar</button>
 
-    <div id="google-login-container" style="margin-top: 1rem; width: 100%;"></div>
+    <div id="google-login-container" style="margin-top: 1rem; display: flex; justify-content: center;"></div>
+
 
 
     <div id="status-msg">Faça login ou cadastre-se.</div>
@@ -193,10 +188,11 @@
                     size: "large",
                     shape: "rectangular",
                     text: "signin_with",
-                    width: "100%",
+                    width: document.querySelector(".btn-cadastrar").offsetWidth,
                     locale: "pt-BR"
                 }
             );
+
 
 
             google.accounts.id.disableAutoSelect();
