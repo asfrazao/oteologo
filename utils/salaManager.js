@@ -16,7 +16,9 @@ function criarSala(nome, personalizada = false) {
       nome,
       personalizada,
       criacao: Date.now(),
-      usuarios: []
+      usuarios: [],
+      ultimoAtivo: Date.now(),      // 👈 Adicionado
+      avisoEnviado: false           // 👈 Adicionado
     };
   }
   return id;
@@ -30,9 +32,12 @@ function podeEntrar(sala) {
 function adicionarUsuario(sala, socketId, nome) {
   const id = gerarIdSala(sala);
   if (!salas[id]) criarSala(id, true);
-  salas[id].usuarios.push({ id: socketId, nome });
 
-  monitorarInatividadePorSala.cancelar(id); // se voltou alguém, cancela a exclusão
+  salas[id].usuarios.push({ id: socketId, nome });
+  salas[id].ultimoAtivo = Date.now();       // 👈 Atualiza último ativo
+  salas[id].avisoEnviado = false;           // 👈 Permite novo aviso se ficar inativa depois
+
+  monitorarInatividadePorSala.cancelar(id); // Cancela exclusão agendada se voltou alguém
 }
 
 function removerUsuario(socketId) {
@@ -47,14 +52,30 @@ function removerUsuario(socketId) {
 }
 
 function removerSalasExpiradas(io) {
-  for (const salaId in salas) {
-    const sala = salas[salaId];
-    if (sala.personalizada && sala.usuarios.length === 0) {
-      delete salas[salaId];
-      delete inatividadePorSala[salaId];
+  const agora = Date.now();
+
+  for (const [nomeSala, sala] of Object.entries(salas)) {
+    if (!sala.personalizada) continue;
+
+    const tempoInativo = agora - sala.ultimoAtivo;
+
+    if (tempoInativo > 2 * 60 * 60 * 1000) { // +2h sem atividade
+      sala.usuarios.forEach(u => {
+        io.to(nomeSala).emit('mensagem', `🕒 O Teólogo disse: <i>${u.nome}</i> foi desconectado por inatividade.`);
+        io.sockets.sockets.get(u.id)?.leave(nomeSala);
+      });
+
+      delete salas[nomeSala];
+      console.log(`[SALA] Sala '${nomeSala}' foi removida após 2h de inatividade.`);
+    }
+    else if (tempoInativo > 60 * 60 * 1000 && !sala.avisoEnviado) { // +1h sem atividade
+      io.to(nomeSala).emit('mensagem', `🕒 <i>O Teólogo disse: Tem alguém aí?</i>`);
+      sala.avisoEnviado = true;
+      console.log(`[SALA] Enviado aviso de inatividade na sala '${nomeSala}'`);
     }
   }
 }
+
 
 const monitorarInatividadePorSala = {
   iniciar(salaId) {

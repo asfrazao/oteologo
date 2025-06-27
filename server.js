@@ -71,6 +71,8 @@ io.on('connection', (socket) => {
     socket.join(sala);
     usuarioPorSocket[socket.id] = { usuario, sala, avatar };
 
+    criarSala(sala, true); // ✅ Garante que a sala existe
+
     const msgEntrada = { usuario: 'O Teólogo disse', mensagem: `${usuario} entrou na sala.` };
     registrarMensagem(sala, msgEntrada);
 
@@ -85,6 +87,7 @@ io.on('connection', (socket) => {
     console.log(`👤 ${usuario} entrou na sala ${sala}`);
     emitirTodosUsuariosPorSala();
   });
+
 
   socket.on('mensagem', (data) => {
     const { sala, usuario, mensagem } = data;

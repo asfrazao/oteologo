@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
-const ACCESS_TOKEN_EXPIRES = '15m';
+const ACCESS_TOKEN_EXPIRES = '2h';
 const REFRESH_TOKEN_EXPIRES_DAYS = 7;
 
 function gerarAccessToken(usuario) {

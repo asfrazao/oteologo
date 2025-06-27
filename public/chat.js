@@ -28,8 +28,14 @@ socket.on("historico", (historico) => {
 });
 
 socket.on("mensagem", (data) => {
+  // 🛠️ Remove a antiga, se já existir com mesmo ID
+  const existente = document.getElementById(`msg-${data.id}`);
+  if (existente) existente.remove();
+
+  // ✨ Exibe a nova (ou editada) mensagem
   exibirMensagem(data);
 });
+
 
 socket.on("mensagemApagada", (data) => {
   const div = document.getElementById(`msg-${data.id}`);
@@ -132,4 +138,19 @@ btnSair.addEventListener("click", () => {
     socket.emit("sair", { sala, usuario });
     window.location.href = "/";
   }
+});
+// Emoji Picker - Mostrar/Esconder e Inserir no campo de texto
+const emojiToggle = document.getElementById("emoji-toggle");
+const emojiPicker = document.getElementById("emoji-picker");
+const inputMensagem = document.getElementById("msg");
+
+emojiToggle.addEventListener("click", () => {
+  emojiPicker.style.display = emojiPicker.style.display === "block" ? "none" : "block";
+});
+
+emojiPicker.addEventListener("emoji-click", event => {
+  const emoji = event.detail.unicode;
+  inputMensagem.value += emoji;
+  inputMensagem.focus();
+  emojiPicker.style.display = "none"; // Fecha automaticamente
 });
