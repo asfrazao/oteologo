@@ -1,4 +1,10 @@
+# Permitir todos os bots, inclusive o do Facebook
 User-agent: *
 Allow: /
 
+# Permitir explicitamente o Facebook
+User-agent: facebookexternalhit
+Allow: /
+
+# Sitemap do site
 Sitemap: https://www.oteologo.com/sitemap.xml

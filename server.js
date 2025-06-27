@@ -33,6 +33,14 @@ mongoose.connect(process.env.MONGO_URI)
       process.exit(1);
     });
 
+app.use((req, res, next) => {
+  const ua = req.get('User-Agent') || '';
+  if (ua.includes('facebookexternalhit')) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+  next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -52,6 +60,8 @@ app.get('/logout', (req, res) => res.sendFile(path.join(__dirname, 'public/auth.
 app.get('/salas', (req, res) => res.sendFile(path.join(__dirname, 'public/salas.html')));
 app.get('/criar', (req, res) => res.sendFile(path.join(__dirname, 'public/criar.html')));
 app.get('/chat', (req, res) => res.sendFile(path.join(__dirname, 'public/chat.html')));
+app.get('/favicon.ico', (req, res) => res.sendFile(path.join(__dirname, 'public/img/favicon.png')));
+
 
 // Socket.IO
 io.on('connection', (socket) => {
