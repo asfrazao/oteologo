@@ -91,12 +91,14 @@ function filterContent(text) {
 
     let cleanedText = text;
     try {
-        // IMPORTANTE: Passamos o texto ORIGINAL para filter.clean().
-        // A normalização `normalizeTextForComparison` é apenas para as listas customizadas.
+        if (!/\w/.test(text)) {
+            log.info('[FILTRO] Texto sem palavras detectado, ignorando filtro.');
+            return text;
+        }
+
         cleanedText = filter.clean(text);
     } catch (e) {
         log.error(`[FILTRO] Erro ao aplicar filtro de conteúdo para "${text}": ${e.message}`);
-        // Em caso de erro, retorna o texto original, sem censura, mas com aviso no log
         return text;
     }
 

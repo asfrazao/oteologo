@@ -331,26 +331,36 @@
     // === Renovação automática do token JWT ===
     async function renovarToken() {
         const refreshToken = localStorage.getItem('refreshToken');
-        if (!refreshToken) return;
+        if (!refreshToken) {
+            console.warn('[TOKEN] Nenhum refreshToken encontrado no localStorage.');
+            return;
+        }
 
         try {
             const res = await fetch('/api/auth/refresh', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify({ refreshToken })
             });
+
             const data = await res.json();
 
-            if (res.ok) {
+            if (res.ok && data.accessToken) {
                 localStorage.setItem('token', data.accessToken);
-                console.log('[TOKEN] Token renovado com sucesso');
+                console.log('[TOKEN] ✅ Token renovado com sucesso');
             } else {
-                console.warn('[TOKEN] Falha ao renovar token:', data.msg);
+                console.warn('[TOKEN] ⚠️ Falha ao renovar token:', data?.msg || 'Resposta inesperada');
+                // Você pode forçar logout aqui se quiser:
+                // localStorage.clear();
+                // window.location.href = '/auth';
             }
         } catch (err) {
-            console.error('[TOKEN] Erro ao renovar token:', err);
+            console.error('[TOKEN] ❌ Erro ao renovar token:', err.message);
         }
     }
+
 
     // Inicia a renovação a cada 1h40 (antes do token de 2h expirar)
     setInterval(renovarToken, 1000 * 60 * 100); // 100 min
